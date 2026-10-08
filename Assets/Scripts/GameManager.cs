@@ -67,9 +67,9 @@ namespace Tamagotchi
                     ok = stats.Feed();
                     Say("Yum yum!");
                     break;
-                case PetAction.Drink:
-                    ok = stats.Drink();
-                    Say("Gulp gulp!");
+                case PetAction.Scold:
+                    ok = stats.Scold();
+                    Say("Sniff... I'm sorry!");
                     break;
                 case PetAction.Study:
                     ok = stats.Study();
@@ -100,7 +100,6 @@ namespace Tamagotchi
         private void RefreshBars()
         {
             ui.HungerBar.SetValue(stats.Hunger);
-            ui.ThirstBar.SetValue(stats.Thirst);
             ui.HappinessBar.SetValue(stats.Happiness);
             ui.EnergyBar.SetValue(stats.Energy);
             ui.IntelligenceBar.SetValue(stats.Intelligence);
