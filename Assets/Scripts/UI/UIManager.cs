@@ -1,6 +1,5 @@
 using System;
 using Tamagotchi.World;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,7 +9,7 @@ namespace Tamagotchi.UI
     public enum PetAction { Feed, Drink, Study, Sleep, Play }
 
     /// <summary>
-    /// Owns all on-screen UI: stat bars, action buttons, mute button and mood text.
+    /// Owns all on-screen UI: stat bars, action buttons, mute button and the speech bubble.
     /// Gameplay code listens to <see cref="ActionPressed"/> / <see cref="MutePressed"/>
     /// and pushes values back with the Show* methods; it never touches UI objects directly.
     /// </summary>
@@ -35,7 +34,8 @@ namespace Tamagotchi.UI
         [Header("Other")]
         [SerializeField] private Button muteButton;
         [SerializeField] private Image muteIcon;
-        [SerializeField] private TMP_Text moodText;
+        [Tooltip("Speech bubble above the pet's head.")]
+        [SerializeField] private SpeechBubble speechBubble;
         [SerializeField] private BackgroundSwitcher backgrounds;
 
         [Header("Game over")]
@@ -106,11 +106,16 @@ namespace Tamagotchi.UI
                 GetButton(a).interactable = interactable;
         }
 
-        /// <summary>Shows the one-line mood / status message under the scene.</summary>
-        public void ShowMood(string message)
+        /// <summary>
+        /// Shows a message in the speech bubble above the pet. Normal messages fade after a few
+        /// seconds; sticky ones (warnings like HANGRY) stay until replaced.
+        /// </summary>
+        public void ShowMood(string message, bool sticky = false)
         {
-            if (moodText != null) moodText.text = message;
+            if (speechBubble != null) speechBubble.Show(message, sticky);
         }
+
+        public SpeechBubble SpeechBubble => speechBubble;
 
         /// <summary>Hangry warning: the hunger bar flashes red and pulses.</summary>
         public void SetHangry(bool hangry) => hungerBar.SetAlarm(hangry);
