@@ -113,6 +113,39 @@ namespace Tamagotchi.Tests
         }
 
         [UnityTest]
+        public IEnumerator Bed_OnlyWhileSleeping_Bowl_OnlyWhileEating()
+        {
+            var bed = GameObject.Find("PetSpot").transform.Find("Bed").gameObject;
+            var bowl = GameObject.Find("PetSpot").transform.Find("FoodBowl").gameObject;
+            Assert.IsFalse(bed.activeSelf);
+            Assert.IsFalse(bowl.activeSelf);
+
+            Press(PetAction.Feed);
+            yield return null;
+            Assert.IsTrue(bowl.activeSelf, "Food bowl should appear while eating.");
+            Assert.IsFalse(bed.activeSelf);
+
+            Press(PetAction.Sleep);
+            yield return null;
+            Assert.IsTrue(bed.activeSelf, "Bed should appear while sleeping.");
+            Assert.IsFalse(bowl.activeSelf);
+
+            Press(PetAction.Sleep); // wake
+            yield return null;
+            Assert.IsFalse(bed.activeSelf);
+        }
+
+        [UnityTest]
+        public IEnumerator SceneProps_ChangeWithBackground()
+        {
+            var left = GameObject.Find("DecorLeft").GetComponent<UnityEngine.UI.Image>();
+            Assert.AreEqual("hamster_house", left.sprite.name);
+            _ui.SceneButton.onClick.Invoke(); // sunny garden
+            yield return null;
+            Assert.AreEqual("sign_board", left.sprite.name);
+        }
+
+        [UnityTest]
         public IEnumerator BaseStates_FollowTheStats()
         {
             _stats.SetValues(10, 80, 80, 10, 100, false, 0);
