@@ -44,7 +44,7 @@ namespace Tamagotchi.Tests
             float before = _stats.Hunger;
             _stats.Simulate(60f); // one minute
             Assert.AreEqual(before - _cfg.hungerDecay, _stats.Hunger, 0.01f);
-            Assert.AreEqual(_cfg.startThirst - _cfg.thirstDecay, _stats.Thirst, 0.01f);
+            Assert.AreEqual(_cfg.startHappiness - _cfg.happinessDecay, _stats.Happiness, 0.01f);
         }
 
         [Test]
@@ -58,7 +58,7 @@ namespace Tamagotchi.Tests
         [Test]
         public void FeedRaisesHunger_AndClampsAt100()
         {
-            _stats.SetValues(50, 50, 50, 50, 50, 100, false, 0);
+            _stats.SetValues(50, 50, 50, 50, 100, false, 0);
             _stats.Feed();
             Assert.AreEqual(50 + _cfg.feedHunger, _stats.Hunger, 0.01f);
             for (int i = 0; i < 10; i++) _stats.Feed();
@@ -68,7 +68,7 @@ namespace Tamagotchi.Tests
         [Test]
         public void StudyRaisesIntelligence_LowersEnergyAndHappiness()
         {
-            _stats.SetValues(50, 50, 50, 50, 10, 100, false, 0);
+            _stats.SetValues(50, 50, 50, 10, 100, false, 0);
             Assert.IsTrue(_stats.Study());
             Assert.AreEqual(10 + _cfg.studyIntelligence, _stats.Intelligence, 0.01f);
             Assert.AreEqual(50 - _cfg.studyEnergyCost, _stats.Energy, 0.01f);
@@ -76,9 +76,17 @@ namespace Tamagotchi.Tests
         }
 
         [Test]
+        public void ScoldLowersHappiness()
+        {
+            _stats.SetValues(50, 50, 50, 10, 100, false, 0);
+            Assert.IsTrue(_stats.Scold());
+            Assert.AreEqual(50 - _cfg.scoldHappinessCost, _stats.Happiness, 0.01f);
+        }
+
+        [Test]
         public void StudyIsRefusedWhenTooTired()
         {
-            _stats.SetValues(50, 50, 50, _cfg.studyEnergyCost - 1, 10, 100, false, 0);
+            _stats.SetValues(50, 50, _cfg.studyEnergyCost - 1, 10, 100, false, 0);
             Assert.IsFalse(_stats.Study());
             Assert.AreEqual(10f, _stats.Intelligence);
         }
@@ -88,7 +96,7 @@ namespace Tamagotchi.Tests
         {
             bool? last = null;
             _stats.HangryChanged += h => last = h;
-            _stats.SetValues(_cfg.hangryThreshold + 1, 80, 80, 80, 10, 100, false, 0);
+            _stats.SetValues(_cfg.hangryThreshold + 1, 80, 80, 10, 100, false, 0);
             _stats.Simulate(60f); // drops below the threshold
             Assert.IsTrue(_stats.IsHangry);
             Assert.AreEqual(true, last);
@@ -101,7 +109,7 @@ namespace Tamagotchi.Tests
         [Test]
         public void SleepingRestoresEnergy_AndWakesWhenFull()
         {
-            _stats.SetValues(80, 80, 80, 10, 10, 100, false, 0);
+            _stats.SetValues(80, 80, 10, 10, 100, false, 0);
             _stats.SetSleeping(true);
             _stats.Simulate(5f);
             Assert.AreEqual(10 + 5 * _cfg.sleepEnergyPerSecond, _stats.Energy, 0.5f);
@@ -118,7 +126,7 @@ namespace Tamagotchi.Tests
         {
             bool sick = false;
             _stats.BecameSick += () => sick = true;
-            _stats.SetValues(0, 80, 80, 80, 10, 100, false, 0);
+            _stats.SetValues(0, 80, 80, 10, 100, false, 0);
             _stats.Simulate(_cfg.starvingSecondsUntilSick - 1f);
             Assert.IsFalse(_stats.IsSick);
             _stats.Simulate(2f);
@@ -127,10 +135,10 @@ namespace Tamagotchi.Tests
         }
 
         [Test]
-        public void HealthDrainsWhenEmpty_AndZeroHealthMeansSick()
+        public void HealthDrainsWhileStarving_AndZeroHealthMeansSick()
         {
             _cfg.starvingSecondsUntilSick = 9999f; // isolate the health rule
-            _stats.SetValues(80, 0, 80, 80, 10, 10, false, 0);
+            _stats.SetValues(0, 80, 80, 10, 10, false, 0);
             _stats.Simulate(30f);
             Assert.Less(_stats.Health, 10f);
             _stats.Simulate(600f);
@@ -141,7 +149,7 @@ namespace Tamagotchi.Tests
         [Test]
         public void SickPetIgnoresActions_UntilRestart()
         {
-            _stats.SetValues(80, 80, 80, 80, 10, 0, false, 0);
+            _stats.SetValues(80, 80, 80, 10, 0, false, 0);
             Assert.IsTrue(_stats.IsSick);
             Assert.IsFalse(_stats.Feed());
 
@@ -154,11 +162,11 @@ namespace Tamagotchi.Tests
         public void LongOfflineGap_IsSimulatedAccurately()
         {
             _cfg.starvingSecondsUntilSick = 99999f;
-            _cfg.healthDrainPerEmptyStat = 0f;
-            _stats.SetValues(100, 100, 100, 100, 100, 100, false, 0);
+            _cfg.healthDrainWhenStarving = 0f;
+            _stats.SetValues(100, 100, 100, 100, 100, false, 0);
             _stats.Simulate(3600f); // one hour
             Assert.AreEqual(0f, _stats.Hunger);
-            Assert.AreEqual(0f, _stats.Thirst);
+            Assert.AreEqual(100f - 60f * _cfg.intelligenceDecay, _stats.Intelligence, 0.5f);
         }
     }
 }

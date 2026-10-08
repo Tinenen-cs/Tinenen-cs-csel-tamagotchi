@@ -26,7 +26,7 @@ namespace Tamagotchi.Tests
             _stats = Object.FindAnyObjectByType<PetStats>();
             _pet = Object.FindAnyObjectByType<PetController>();
             Assert.IsNotNull(_pet, "Main scene should have a PetController.");
-            _stats.SetValues(80, 80, 80, 80, 10, 100, false, 0); // healthy, idle
+            _stats.SetValues(80, 80, 80, 10, 100, false, 0); // healthy, idle
             yield return null;
         }
 
@@ -80,18 +80,19 @@ namespace Tamagotchi.Tests
             yield return null;
             Assert.AreEqual(PetState.Studying, _pet.State);
 
-            _stats.SetValues(80, 80, 80, 1, 10, 100, false, 0);
+            _stats.SetValues(80, 80, 1, 10, 100, false, 0);
             Press(PetAction.Study);
             yield return null;
             Assert.AreEqual(PetState.Sad, _pet.State, "Refusing (too tired) should look sad.");
         }
 
         [UnityTest]
-        public IEnumerator Drink_ShowsDrinking()
+        public IEnumerator Scold_ShowsSadReaction()
         {
-            Press(PetAction.Drink);
+            Press(PetAction.Scold);
             yield return null;
-            Assert.AreEqual(PetState.Drinking, _pet.State);
+            Assert.AreEqual(PetState.Sad, _pet.State);
+            Assert.AreEqual("Sniff... I'm sorry!", _ui.SpeechBubble.Message);
         }
 
         [UnityTest]
@@ -114,19 +115,19 @@ namespace Tamagotchi.Tests
         [UnityTest]
         public IEnumerator BaseStates_FollowTheStats()
         {
-            _stats.SetValues(10, 80, 80, 80, 10, 100, false, 0);
+            _stats.SetValues(10, 80, 80, 10, 100, false, 0);
             yield return null;
             Assert.AreEqual(PetState.Hangry, _pet.State);
 
-            _stats.SetValues(80, 80, 80, 80, 10, 10, false, 0);
+            _stats.SetValues(80, 80, 80, 10, 10, false, 0);
             yield return null;
             Assert.AreEqual(PetState.Crying, _pet.State, "Low health should make the pet cry.");
 
-            _stats.SetValues(80, 80, 10, 80, 10, 100, false, 0);
+            _stats.SetValues(80, 10, 80, 10, 100, false, 0);
             yield return null;
             Assert.AreEqual(PetState.Sad, _pet.State, "Low happiness should make the pet sad.");
 
-            _stats.SetValues(0, 0, 50, 50, 10, 0, false, 0);
+            _stats.SetValues(0, 50, 50, 10, 0, false, 0);
             yield return null;
             Assert.AreEqual(PetState.Sick, _pet.State);
         }
