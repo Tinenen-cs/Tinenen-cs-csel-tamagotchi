@@ -154,36 +154,86 @@ public static class MainSceneBuilder
         // Nothing overlaps this area, so the pet is never covered by UI.
         var petArea = Rect("PetArea", safeArea, Vector2.zero, Vector2.one, new Vector2(30, 460), new Vector2(-30, -520));
 
-        // Pet stands near the bottom of the area; its size follows the area height.
-        var pet = Rect("Pet", petArea, new Vector2(0.5f, 0.03f), new Vector2(0.5f, 0.6f), Vector2.zero, Vector2.zero);
+        // Scene props beside the pet (behind it); SceneDecor swaps them with the background.
+        var decorLeft = Rect("DecorLeft", petArea, Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero);
+        decorLeft.pivot = Vector2.zero;
+        decorLeft.anchoredPosition = new Vector2(0, 28);
+        var decorLeftImage = Img(decorLeft.gameObject, null, preserveAspect: true);
+        var decorRight = Rect("DecorRight", petArea, new Vector2(1, 0), new Vector2(1, 0), Vector2.zero, Vector2.zero);
+        decorRight.pivot = new Vector2(1, 0);
+        decorRight.anchoredPosition = new Vector2(0, 28);
+        var decorRightImage = Img(decorRight.gameObject, null, preserveAspect: true);
+
+        // PetSpot: the hamster's frame (208x187 source pixels) near the bottom of the area; its size
+        // follows the area height. Bed (behind), hamster, food bowl (in front) all scale with it.
+        var spot = Rect("PetSpot", petArea, new Vector2(0.5f, 0.03f), new Vector2(0.5f, 0.6f), Vector2.zero, Vector2.zero);
+        var spotFit = spot.gameObject.AddComponent<AspectRatioFitter>();
+        spotFit.aspectMode = AspectRatioFitter.AspectMode.HeightControlsWidth;
+        spotFit.aspectRatio = 208f / 187f;
+
+        var bed = Rect("Bed", spot, new Vector2(-0.15f, -0.04f), new Vector2(1.15f, 1.18f), Vector2.zero, Vector2.zero);
+        Img(bed.gameObject, Sprite("Props/Home/soft_bed.png"), preserveAspect: true);
+        bed.gameObject.SetActive(false);
+
+        var pet = Rect("Pet", spot, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         var petImage = Img(pet.gameObject, Sprite("Pet/Hamster/idle_01.png"), preserveAspect: true);
         var petAnimator = pet.gameObject.AddComponent<SpriteAnimator>();
-        var petFit = pet.gameObject.AddComponent<AspectRatioFitter>();
-        petFit.aspectMode = AspectRatioFitter.AspectMode.HeightControlsWidth;
-        petFit.aspectRatio = 208f / 187f;
 
-        // Speech bubble above the pet's head: sized to its text, tail points down.
+        var bowl = Rect("FoodBowl", spot, new Vector2(0.73f, -0.02f), new Vector2(1.17f, 0.353f), Vector2.zero, Vector2.zero);
+        Img(bowl.gameObject, Sprite("Props/Home/food_bowl.png"), preserveAspect: true);
+        bowl.gameObject.SetActive(false);
+
+        var decor = petArea.gameObject.AddComponent<SceneDecor>();
+        Set(decor, "backgrounds", switcher);
+        Set(decor, "leftSlot", decorLeftImage);
+        Set(decor, "rightSlot", decorRightImage);
+        Set(decor, "petSpot", spot);
+        SetDecor(decor, new[]
+        {
+            ("cozy_home", "Home/hamster_house", "Home/water_dispenser"),
+            ("sunny_garden", "Garden/sign_board", "Garden/picket_fence"),
+            ("beach", "Beach/palm_tree", "Beach/beach_umbrella_lounger"),
+            ("forest_stream", "Garden/tree_stump", "Forest/rocks_bush"),
+            ("sunset_rooftop", "Garden/potted_plant", "Garden/flower_bush"),
+            ("moonlit_bedroom", "Home/hamster_house", "Home/wooden_tunnel"),
+        });
+        // Show the default (cozy home) props in the editor too.
+        const float propPixels = 536f / 187f * 0.8f;
+        decorLeftImage.sprite = Sprite("Props/Home/hamster_house.png");
+        decorLeft.sizeDelta = decorLeftImage.sprite.rect.size * propPixels;
+        decorRightImage.sprite = Sprite("Props/Home/water_dispenser.png");
+        decorRight.sizeDelta = decorRightImage.sprite.rect.size * propPixels;
+
+        // Speech bubble in the asset pack's style: hamster face, text, heart. The tail sits at the
+        // bubble's bottom-left corner and points down at the pet's head; the bubble grows to the right.
+        const float bubblePixel = 2.6f;               // canvas units per source pixel of the bubble
         var bubbleRt = Rect("SpeechBubble", petArea, new Vector2(0.5f, 0.62f), new Vector2(0.5f, 0.62f), Vector2.zero, Vector2.zero);
-        bubbleRt.pivot = new Vector2(0.5f, 0f);
-        bubbleRt.sizeDelta = new Vector2(760, 0);
-        Sliced(bubbleRt.gameObject, Sprite("UI/Generated/bubble.png")).raycastTarget = false;
-        var layout = bubbleRt.gameObject.AddComponent<VerticalLayoutGroup>();
-        layout.padding = new RectOffset(40, 40, 26, 34);
-        layout.childControlWidth = true;
-        layout.childControlHeight = true;
-        layout.childForceExpandWidth = true;
-        layout.childForceExpandHeight = false;
+        bubbleRt.pivot = Vector2.zero;
+        bubbleRt.anchoredPosition = new Vector2(-27 * bubblePixel - 120, 0); // tail tip ~120 left of centre
+        var bubbleBg = Sliced(bubbleRt.gameObject, Sprite("UI/Generated/bubble_pack.png"));
+        bubbleBg.pixelsPerUnitMultiplier = 1f / bubblePixel;
+        bubbleBg.raycastTarget = false;
+        var row = bubbleRt.gameObject.AddComponent<HorizontalLayoutGroup>();
+        row.padding = new RectOffset(36, 40, 30, 54);
+        row.spacing = 18;
+        row.childAlignment = TextAnchor.MiddleCenter;
+        row.childControlWidth = true;
+        row.childControlHeight = true;
+        row.childForceExpandWidth = false;
+        row.childForceExpandHeight = false;
         var fitter = bubbleRt.gameObject.AddComponent<ContentSizeFitter>();
+        fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
         fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-        fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize; // hug the text
         bubbleRt.gameObject.AddComponent<CanvasGroup>();
 
-        var speech = Text(bubbleRt, "Text", "Hi! I'm " + PetName + "!", 60, Brown, TextAlignmentOptions.Center);
+        var face = Rect("Face", bubbleRt, Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero);
+        Img(face.gameObject, Sprite("UI/Buttons/hamster_face.png"), preserveAspect: true);
+        Fixed(face.gameObject, 92, 80);
+        var speech = Text(bubbleRt, "Text", "Hi! I'm " + PetName + "!", 54, Brown, TextAlignmentOptions.Center);
         // Messages are short (no wrapping); put a line break in a message for a second line.
-
-        var tail = Rect("Tail", bubbleRt, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(-27, -30), new Vector2(27, 6));
-        Img(tail.gameObject, Sprite("UI/Generated/bubble_tail.png"));
-        tail.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+        var heart = Rect("Heart", bubbleRt, Vector2.zero, Vector2.zero, Vector2.zero, Vector2.zero);
+        Img(heart.gameObject, Sprite("UI/Buttons/heart.png"), preserveAspect: true);
+        Fixed(heart.gameObject, 56, 52);
 
         var bubble = bubbleRt.gameObject.AddComponent<SpeechBubble>();
         Set(bubble, "text", speech);
@@ -240,6 +290,8 @@ public static class MainSceneBuilder
         Set(controller, "backgrounds", switcher);
         Set(controller, "sleepBackground", Sprite("Backgrounds/moonlit_bedroom.png"));
         Set(controller, "dimOverlay", dimImage);
+        Set(controller, "bedProp", bed.gameObject);
+        Set(controller, "foodProp", bowl.gameObject);
         SetAnimations(controller, new[]
         {
             // state, frames (hamster sprite name), frames per second
@@ -273,6 +325,30 @@ public static class MainSceneBuilder
         }
         if (list.Count == 0) Debug.LogError("[MainSceneBuilder] No frames found for " + name);
         return list.ToArray();
+    }
+
+    /// <summary>Fixed layout size for an element inside a layout group.</summary>
+    private static void Fixed(GameObject go, float w, float h)
+    {
+        var le = go.AddComponent<LayoutElement>();
+        le.preferredWidth = le.minWidth = w;
+        le.preferredHeight = le.minHeight = h;
+    }
+
+    /// <summary>Fills SceneDecor's background -> (left, right) prop table. Names are under Assets/Art.</summary>
+    private static void SetDecor(SceneDecor decor, (string background, string left, string right)[] sets)
+    {
+        var so = new SerializedObject(decor);
+        var list = so.FindProperty("sets");
+        list.arraySize = sets.Length;
+        for (int i = 0; i < sets.Length; i++)
+        {
+            var e = list.GetArrayElementAtIndex(i);
+            e.FindPropertyRelative("background").objectReferenceValue = Sprite("Backgrounds/" + sets[i].background + ".png");
+            e.FindPropertyRelative("left").objectReferenceValue = Sprite("Props/" + sets[i].left + ".png");
+            e.FindPropertyRelative("right").objectReferenceValue = Sprite("Props/" + sets[i].right + ".png");
+        }
+        so.ApplyModifiedPropertiesWithoutUndo();
     }
 
     private static void SetFrames(SpriteAnimator animator, Sprite[] frames, float fps)
