@@ -36,5 +36,6 @@ public class ArtImportPostprocessor : AssetPostprocessor
         { "bar_fill", new Vector4(2, 2, 2, 2) },
         { "button_tile", new Vector4(5, 6, 5, 5) },
         { "panel", new Vector4(6, 6, 6, 6) },
+        { "bubble", new Vector4(6, 6, 6, 6) },
     };
 }
