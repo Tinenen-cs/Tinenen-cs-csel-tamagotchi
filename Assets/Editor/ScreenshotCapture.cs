@@ -13,6 +13,7 @@ using Object = UnityEngine.Object;
 ///
 /// Editor:       menu Tamagotchi > Capture Screenshot          (Docs/screenshot.png)
 ///               menu Tamagotchi > Capture State Screenshots   (Docs/state_*.png)
+///               menu Tamagotchi > Capture Landscape Check     (Docs/landscape_check.png, 1920x1080)
 /// Command line: Unity -batchmode -quit -projectPath . -executeMethod ScreenshotCapture.Capture
 ///               (or ScreenshotCapture.CaptureStates; do not pass -nographics, rendering needs a GPU)
 /// </summary>
@@ -89,12 +90,20 @@ public static class ScreenshotCapture
 
     // ---------- rendering ----------
 
-    private static void Render(string outputPath, Action pose)
+    /// <summary>Renders a wide 1920x1080 window to check the UI stays a centered phone column.</summary>
+    [MenuItem("Tamagotchi/Capture Landscape Check")]
+    public static void CaptureLandscape()
+    {
+        Render("Docs/landscape_check.png", null, 1920, 1080);
+    }
+
+    private static void Render(string outputPath, Action pose, int w = 0, int h = 0)
     {
         var scene = EditorSceneManager.OpenScene(ProjectSetup.MainScenePath, OpenSceneMode.Single);
         pose?.Invoke();
 
-        int w = (int)ProjectSetup.ReferenceResolution.x, h = (int)ProjectSetup.ReferenceResolution.y;
+        if (w <= 0) w = (int)ProjectSetup.ReferenceResolution.x;
+        if (h <= 0) h = (int)ProjectSetup.ReferenceResolution.y;
         var cam = Camera.main;
         var canvas = Object.FindAnyObjectByType<Canvas>();
         var rt = new RenderTexture(w, h, 24, RenderTextureFormat.ARGB32);
@@ -105,8 +114,11 @@ public static class ScreenshotCapture
         canvas.planeDistance = 5;
         cam.targetTexture = rt;
         Canvas.ForceUpdateCanvases();
+        foreach (var f in Object.FindObjectsByType<PortraitFrame>(FindObjectsSortMode.None)) f.Refresh();
         cam.Render();
         Canvas.ForceUpdateCanvases(); // layout groups / fitters settle after the first pass
+        foreach (var f in Object.FindObjectsByType<PortraitFrame>(FindObjectsSortMode.None)) f.Refresh();
+        Canvas.ForceUpdateCanvases();
         cam.Render();
 
         var prev = RenderTexture.active;
