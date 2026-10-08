@@ -20,6 +20,14 @@ namespace Tamagotchi.UI
         [SerializeField] private Gradient colorByValue = new Gradient();
         [SerializeField] private Color fixedColor = Color.white;
 
+        [Header("Alarm (e.g. hangry)")]
+        [SerializeField] private Color alarmColor = new Color(1f, 0.15f, 0.1f);
+        [Tooltip("Flashes per second while the alarm is on.")]
+        [SerializeField] private float alarmSpeed = 2.5f;
+        [SerializeField] private float alarmPulseScale = 0.04f;
+
+        private bool _alarm;
+
         /// <summary>Current value, 0-100.</summary>
         public float Value => slider != null ? slider.value : 0f;
 
@@ -41,6 +49,30 @@ namespace Tamagotchi.UI
             slider.value = value;
             fill.color = CurrentColor;
             if (valueText != null) valueText.text = Mathf.RoundToInt(value) + "%";
+        }
+
+        /// <summary>Whether the bar is currently flashing.</summary>
+        public bool IsAlarmOn => _alarm;
+
+        /// <summary>Turns the red flashing + pulsing warning on or off.</summary>
+        public void SetAlarm(bool on)
+        {
+            _alarm = on;
+            if (!on)
+            {
+                fill.color = CurrentColor;
+                transform.localScale = Vector3.one;
+            }
+        }
+
+        private void Update()
+        {
+            if (!_alarm) return;
+            // 0..1..0 wave: blend the fill toward red and pulse the whole bar.
+            float wave = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * alarmSpeed * Mathf.PI * 2f);
+            fill.color = Color.Lerp(CurrentColor, alarmColor, wave);
+            float s = 1f + alarmPulseScale * wave;
+            transform.localScale = new Vector3(s, s, 1f);
         }
 
         /// <summary>The color the fill should have at the current value.</summary>
