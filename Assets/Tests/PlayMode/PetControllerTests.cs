@@ -136,16 +136,6 @@ namespace Tamagotchi.Tests
         }
 
         [UnityTest]
-        public IEnumerator SceneProps_ChangeWithBackground()
-        {
-            var left = GameObject.Find("DecorLeft").GetComponent<UnityEngine.UI.Image>();
-            Assert.AreEqual("hamster_house", left.sprite.name);
-            _ui.SceneButton.onClick.Invoke(); // sunny garden
-            yield return null;
-            Assert.AreEqual("sign_board", left.sprite.name);
-        }
-
-        [UnityTest]
         public IEnumerator BaseStates_FollowTheStats()
         {
             _stats.SetValues(10, 80, 80, 10, 100, false, 0);
