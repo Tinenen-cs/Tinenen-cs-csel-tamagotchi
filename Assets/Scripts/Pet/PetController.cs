@@ -46,12 +46,14 @@ namespace Tamagotchi.Pet
         [Header("Sleeping")]
         [SerializeField] private BackgroundSwitcher backgrounds;
         [SerializeField] private Sprite sleepBackground;
+        [Tooltip("Which part of the night image to show: 0 = left edge, 1 = right edge. 1 keeps its painted bed off screen.")]
+        [Range(0, 1)] [SerializeField] private float sleepBackgroundAlign = 1f;
         [SerializeField] private Image dimOverlay;
         [Range(0, 1)] [SerializeField] private float sleepDim = 0.45f;
         [Tooltip("Bed the pet lies on while sleeping (shown only then).")]
         [SerializeField] private GameObject bedProp;
         [Tooltip("How far the pet is lifted onto the bed, as a fraction of its height.")]
-        [SerializeField] private float sleepLift = 0.14f;
+        [SerializeField] private float sleepLift = 0.20f;
 
         [Header("Eating")]
         [Tooltip("Food bowl shown beside the pet while it eats.")]
@@ -203,7 +205,7 @@ namespace Tamagotchi.Pet
             // Night scene while asleep.
             if (backgrounds != null)
             {
-                if (state == PetState.Sleeping && sleepBackground != null) backgrounds.ShowOverride(sleepBackground);
+                if (state == PetState.Sleeping && sleepBackground != null) backgrounds.ShowOverride(sleepBackground, sleepBackgroundAlign);
                 else if (previous == PetState.Sleeping) backgrounds.ClearOverride();
             }
 
