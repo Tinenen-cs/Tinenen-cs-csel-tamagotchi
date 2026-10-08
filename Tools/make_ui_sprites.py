@@ -68,7 +68,9 @@ def clean_button(path):
 SHEET = os.path.join(os.path.dirname(__file__), "..", "..",
                      "tamagotchi_unity_asset_pack(1)", "Source", "complete_generated_asset_sheet.png")
 SHEET_CUTS = {
-    "star.png": (712, 895, 763, 965),  # star.png in the pack is missing its left arm
+    "star.png": (712, 895, 763, 965),   # star.png in the pack is missing its left arm
+    "music.png": (668, 895, 713, 965),  # music.png in the pack has its left note head cut off
+    "sleep_z.png": (762, 905, 811, 955),  # sleep_z.png in the pack is cut on the left and top
 }
 
 
