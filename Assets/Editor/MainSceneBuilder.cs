@@ -1,3 +1,5 @@
+using Tamagotchi;
+using Tamagotchi.Pet;
 using Tamagotchi.UI;
 using Tamagotchi.World;
 using TMPro;
@@ -32,6 +34,7 @@ public static class MainSceneBuilder
 
     private const string Art = "Assets/Art/";
     public const string FontAssetPath = Art + "Fonts/KenneyPixel SDF.asset";
+    public const string StatsConfigPath = "Assets/Data/PetStatsConfig.asset";
 
     // Pixel-art scale for 9-sliced frames: 1 source pixel = 6 canvas units.
     private const float PixelScale = 6f;
@@ -178,6 +181,47 @@ public static class MainSceneBuilder
         Set(ui, "muteIcon", muteIcon);
         Set(ui, "moodText", mood);
         Set(ui, "backgrounds", switcher);
+
+        // ---------- Game over (hidden until the pet gets sick) ----------
+        var gameOver = Rect("GameOverPanel", safeArea, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        var shade = Img(gameOver.gameObject, null);
+        shade.color = new Color(0.12f, 0.06f, 0.04f, 0.75f);
+        shade.raycastTarget = true; // blocks taps on the buttons behind it
+
+        var card = Rect("Card", gameOver, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), new Vector2(-440, -480), new Vector2(440, 480));
+        Sliced(card.gameObject, Sprite("UI/Generated/panel.png"));
+        var sickPet = Rect("SickPet", card, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(-220, -470), new Vector2(220, -70));
+        Img(sickPet.gameObject, Sprite("Pet/Hamster/crying_01.png"), preserveAspect: true);
+        var title = Text(card, "Title", PetName + " got sick!", 96, Brown, TextAlignmentOptions.Center);
+        Place(title.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(30, -590), new Vector2(-30, -480));
+        var sub = Text(card, "Subtitle", "Keep the hunger bar up next time.", 52, SoftBrown, TextAlignmentOptions.Center);
+        Place(sub.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(30, -680), new Vector2(-30, -600));
+        var restart = ActionButton(card, "RestartButton", "RESTART", Sprite("UI/Buttons/heart.png"));
+        Place((RectTransform)restart.transform, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(-170, 40), new Vector2(170, 285));
+        gameOver.gameObject.SetActive(false);
+
+        Set(ui, "gameOverPanel", gameOver.gameObject);
+        Set(ui, "restartButton", restart);
+
+        // ---------- Gameplay objects ----------
+        var game = new GameObject("Game");
+        var stats = game.AddComponent<PetStats>();
+        Set(stats, "config", EnsureStatsConfig());
+        var manager = game.AddComponent<GameManager>();
+        Set(manager, "stats", stats);
+        Set(manager, "ui", ui);
+    }
+
+    /// <summary>Creates the stats tuning asset with default values (once; your edits are kept).</summary>
+    public static PetStatsConfig EnsureStatsConfig()
+    {
+        var existing = AssetDatabase.LoadAssetAtPath<PetStatsConfig>(StatsConfigPath);
+        if (existing != null) return existing;
+        if (!AssetDatabase.IsValidFolder("Assets/Data")) AssetDatabase.CreateFolder("Assets", "Data");
+        var config = ScriptableObject.CreateInstance<PetStatsConfig>();
+        AssetDatabase.CreateAsset(config, StatsConfigPath);
+        AssetDatabase.SaveAssets();
+        return config;
     }
 
     // =====================================================================

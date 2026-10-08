@@ -38,11 +38,18 @@ namespace Tamagotchi.UI
         [SerializeField] private TMP_Text moodText;
         [SerializeField] private BackgroundSwitcher backgrounds;
 
+        [Header("Game over")]
+        [SerializeField] private GameObject gameOverPanel;
+        [SerializeField] private Button restartButton;
+
         /// <summary>Raised when one of the pet action buttons is tapped.</summary>
         public event Action<PetAction> ActionPressed;
 
         /// <summary>Raised when the mute button is tapped.</summary>
         public event Action MutePressed;
+
+        /// <summary>Raised when Restart is tapped on the game-over screen.</summary>
+        public event Action RestartPressed;
 
         /// <summary>Raised for every button tap (used for the generic click sound).</summary>
         public event Action AnyButtonPressed;
@@ -64,6 +71,7 @@ namespace Tamagotchi.UI
             Hook(playButton, () => ActionPressed?.Invoke(PetAction.Play));
             Hook(sceneButton, () => backgrounds.Next());
             Hook(muteButton, () => MutePressed?.Invoke());
+            Hook(restartButton, () => RestartPressed?.Invoke());
         }
 
         private void Hook(Button button, Action onClick)
@@ -88,6 +96,8 @@ namespace Tamagotchi.UI
 
         public Button SceneButton => sceneButton;
         public Button MuteButton => muteButton;
+        public Button RestartButton => restartButton;
+        public bool IsGameOverShown => gameOverPanel != null && gameOverPanel.activeSelf;
 
         /// <summary>Enables or disables all pet action buttons (e.g. while sick).</summary>
         public void SetActionsInteractable(bool interactable)
@@ -100,6 +110,15 @@ namespace Tamagotchi.UI
         public void ShowMood(string message)
         {
             if (moodText != null) moodText.text = message;
+        }
+
+        /// <summary>Hangry warning: the hunger bar flashes red and pulses.</summary>
+        public void SetHangry(bool hangry) => hungerBar.SetAlarm(hangry);
+
+        /// <summary>Shows or hides the "your pet got sick" screen with the Restart button.</summary>
+        public void ShowGameOver(bool show)
+        {
+            if (gameOverPanel != null) gameOverPanel.SetActive(show);
         }
 
         /// <summary>Dims the mute icon when audio is muted.</summary>
