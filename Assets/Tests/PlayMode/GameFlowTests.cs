@@ -49,6 +49,26 @@ namespace Tamagotchi.Tests
         }
 
         [UnityTest]
+        public IEnumerator Feed_ShowsSpeechBubbleAbovePet()
+        {
+            _stats.SetValues(60, 80, 80, 80, 10, 100, false, 0);
+            _ui.GetButton(PetAction.Feed).onClick.Invoke();
+            yield return null;
+            Assert.IsTrue(_ui.SpeechBubble.IsVisible);
+            Assert.AreEqual("Yum yum!", _ui.SpeechBubble.Message);
+        }
+
+        [UnityTest]
+        public IEnumerator Hangry_WarningStaysInBubble_EvenAfterOtherActions()
+        {
+            _stats.SetValues(10, 80, 80, 80, 10, 100, false, 0);
+            _stats.Simulate(0.1f);
+            _ui.GetButton(PetAction.Drink).onClick.Invoke();
+            yield return null;
+            StringAssert.Contains("HANGRY", _ui.SpeechBubble.Message);
+        }
+
+        [UnityTest]
         public IEnumerator Sick_ShowsGameOver_RestartRecovers()
         {
             Assert.IsFalse(_ui.IsGameOverShown);

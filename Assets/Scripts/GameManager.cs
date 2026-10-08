@@ -42,10 +42,18 @@ namespace Tamagotchi
             ui.ShowGameOver(false);
             RefreshBars();
             ui.SetHangry(stats.IsHangry);
-            ui.ShowMood(stats.IsHangry ? HangryMessage : $"{PetName} is happy to see you!");
+            if (stats.IsHangry) ui.ShowMood(HangryMessage, sticky: true);
+            else ui.ShowMood($"Hi! I'm {PetName}!");
         }
 
-        private string HangryMessage => $"{PetName} is HANGRY! Feed me!";
+        private string HangryMessage => "I'm HANGRY! Feed me!";
+
+        /// <summary>Speech for an action; while hangry the warning stays attached.</summary>
+        private void Say(string message)
+        {
+            if (stats.IsHangry) ui.ShowMood(message + "\nStill HANGRY!", sticky: true);
+            else ui.ShowMood(message);
+        }
 
         // ---------- UI -> stats ----------
 
@@ -55,21 +63,21 @@ namespace Tamagotchi
             {
                 case PetAction.Feed:
                     stats.Feed();
-                    ui.ShowMood($"Yum! {PetName} is eating.");
+                    Say("Yum yum!");
                     break;
                 case PetAction.Drink:
                     stats.Drink();
-                    ui.ShowMood($"Gulp gulp! {PetName} is drinking.");
+                    Say("Gulp gulp!");
                     break;
                 case PetAction.Study:
-                    ui.ShowMood(stats.Study()
-                        ? $"{PetName} is studying hard."
-                        : $"{PetName} is too tired to study...");
+                    Say(stats.Study()
+                        ? "Studying hard!"
+                        : "Too tired to study...");
                     break;
                 case PetAction.Play:
-                    ui.ShowMood(stats.Play()
-                        ? $"{PetName} is playing! Wheee!"
-                        : $"{PetName} is too tired to play...");
+                    Say(stats.Play()
+                        ? "Wheee! Fun!"
+                        : "Too tired to play...");
                     break;
                 case PetAction.Sleep:
                     stats.SetSleeping(!stats.IsSleeping);
@@ -83,7 +91,7 @@ namespace Tamagotchi
             ui.ShowGameOver(false);
             ui.SetActionsInteractable(true);
             ui.SetHangry(stats.IsHangry);
-            ui.ShowMood($"{PetName} is back and feeling great!");
+            ui.ShowMood("I feel great again!");
         }
 
         // ---------- stats -> UI ----------
@@ -101,19 +109,20 @@ namespace Tamagotchi
         private void OnHangryChanged(bool hangry)
         {
             ui.SetHangry(hangry);
-            ui.ShowMood(hangry ? HangryMessage : $"{PetName} feels full again.");
+            if (hangry) ui.ShowMood(HangryMessage, sticky: true);
+            else ui.ShowMood("Full again, thanks!");
         }
 
         private void OnSleepChanged(bool sleeping)
         {
-            ui.ShowMood(sleeping ? $"{PetName} is sleeping... Zzz" : $"{PetName} woke up!");
+            ui.ShowMood(sleeping ? "Zzz..." : "I'm awake!", sticky: sleeping);
         }
 
         private void OnBecameSick()
         {
             ui.SetHangry(false);
             ui.SetActionsInteractable(false);
-            ui.ShowMood($"Oh no! {PetName} got sick...");
+            ui.ShowMood("I feel sick...");
             ui.ShowGameOver(true);
         }
     }
