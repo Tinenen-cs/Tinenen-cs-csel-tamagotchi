@@ -15,35 +15,51 @@ and it gets **sick**.
 |------|---------|--------|
 | 1 | Project setup (portrait, Canvas Scaler, safe area, art import) | ✅ Done |
 | 2 | UI layout (stat bars, pet area, action buttons, Scene button, mute) | ✅ Done |
-| 3 | Stats, hunger bar and hangry state | ⏳ Planned |
-| 4 | Pet state machine and emotes, background switcher | ⏳ Planned |
-| 5 | Audio (AudioManager, CC0 sounds) | ⏳ Planned |
+| 3 | Stats, hunger bar, hangry state, sick / game over + Restart | ✅ Done |
+| 4 | Pet state machine and emotes (idle, eating, studying, sleeping, playing, happy, sad, crying, hangry, sick) | ⏳ Planned |
+| 5 | Audio (AudioManager, CC0 sounds, mute) | ⏳ Planned |
 | 6 | Save/load with offline decay | ⏳ Planned |
-| 7 | Polish (game over, restart) | ⏳ Planned |
+| 7 | Polish | ⏳ Planned |
 | 8 | WebGL (GitHub Pages) and mobile builds | ⏳ Planned |
 
-## Features (planned)
+## Features
 
-- **Stats (0–100):** Hunger, Thirst, Happiness, Energy, Intelligence and Health. They decay over time,
-  and the rates are set in a ScriptableObject.
-- **Hunger bar** at the top that goes green → yellow → red. **Below 25%** the pet is *hangry*: angry
-  emote, a flashing red bar and a repeating hangry sound.
-- **Sick / game over** when Health reaches 0, with a Restart button.
-- **Scene button:** cycles through 6 pixel-art backgrounds (default: cozy home). Sleeping switches to
-  the moonlit bedroom and dims the scene until the pet wakes up.
-- **Mute toggle.**
+- **Six stats (0–100):** Hunger, Thirst, Happiness, Energy, Intelligence and Health. They decay every
+  second. All numbers are in `Assets/Data/PetStatsConfig.asset` (see *Tuning the stats*).
+- **Hunger bar** at the top that goes green → yellow → red. **Below 25%** the pet is **hangry**: the bar
+  flashes red and pulses, and the mood line says so. *(The angry emote and hangry sound come in steps 4–5.)*
+- **Health** drops while Hunger or Thirst is at 0, and slowly recovers while both are above 50%.
+- **Sick / game over:** if Health reaches 0, **or Hunger stays at 0 for 30 seconds**, the pet gets
+  sick. A game-over card with the crying hamster and a **Restart** button appears.
+- **Sleep** restores Energy over time (4 per second) and slows the other stats. The pet wakes up by
+  itself when Energy is full, or when you tap Sleep again or do anything else.
+- **Scene button:** cycles through 6 pixel-art backgrounds (default: cozy home).
+- **Mood line** under the scene describes what the pet is doing.
+- *Planned:* animated emotes for every state, a sound for every action and emote, a mute toggle,
+  save/load, and Sleep switching to the moonlit bedroom with the scene dimmed.
 
 ## Controls
 
-| Button | Effect |
+| Button | Effect (default numbers) |
 |--------|--------|
-| Feed | +Hunger, eating emote |
-| Drink | +Thirst, drinking emote |
-| Study | +Intelligence, −Energy, −Happiness, studying emote |
-| Sleep | Restores Energy over time, dims the scene, sleeping emote |
-| Play | +Happiness, happy/playing emote |
+| Feed | Hunger +25, Happiness +3 |
+| Drink | Thirst +25 |
+| Study | Intelligence +12, Energy −10, Happiness −5 (refused if Energy < 10: "too tired") |
+| Sleep | Falls asleep and Energy refills over time; tap again to wake up |
+| Play | Happiness +20, Energy −8, Hunger −3, Thirst −3 (refused if Energy < 8) |
 | Scene | Changes the background (cozy home → sunny garden → beach → forest stream → sunset rooftop → moonlit bedroom) |
-| 🔇 | Mute / unmute all audio |
+| ♪ (top right) | Mute / unmute (works from step 5) |
+| Restart | On the game-over card: new pet with starting stats |
+
+## Tuning the stats
+
+1. In Unity's **Project** window open `Assets > Data` and click **PetStatsConfig**.
+2. The **Inspector** shows every number: starting values, decay per minute, sleep speed, health
+   drain/regeneration, the hangry threshold, how long hunger can stay at 0, and each button's effect.
+3. Change values. They apply the next time you press Play. Your edits are kept when the scene is
+   regenerated.
+4. **Demo mode:** set **Time Scale** to `10` (or `30`) to watch the hunger bar drain, go hangry and get
+   sick in about a minute. Set it back to `1` for normal play.
 
 ## Unity version and packages
 
@@ -76,8 +92,12 @@ Assets/
     UI/PressBounce.cs squash-and-spring feedback on button press
     UI/SafeArea.cs    keeps UI clear of notches and cut-outs
     World/BackgroundSwitcher.cs  Scene button cycling + temporary override (used by Sleep)
+    Pet/PetStats.cs        the six stats: decay, actions, sleep, health, hangry, sick
+    Pet/PetStatsConfig.cs  ScriptableObject with all tuning numbers
+    GameManager.cs         wires buttons -> stats and stats -> UI (bars, hangry, game over)
+  Data/PetStatsConfig.asset  the tuning values used by the game
   TextMesh Pro/       TextMesh Pro essential resources
-  Tests/PlayMode/     smoke test + UI layout tests
+  Tests/PlayMode/     smoke test, UI layout, stat rules and game-flow tests
 Docs/                 screenshots
 Tools/
   verify.sh           batch-mode check: compile, regenerate scene, run tests
@@ -125,6 +145,34 @@ will be listed here with its source and license._
    UNITY="/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/MacOS/Unity" Tools/verify.sh
    ```
    _A command-line build command is added in step 8._
+
+### Test-run in the Unity Editor (Windows, step by step)
+
+1. **Get the latest code** (Git Bash or PowerShell):
+   ```bash
+   cd path/to/Tinenen-cs-csel-tamagotchi
+   git checkout main
+   git pull
+   ```
+2. Open **Unity Hub** from the Start menu.
+3. **First time only:** go to **Projects → Add → Add project from disk**, select the project folder
+   (the one that contains `Assets`, `Packages` and `ProjectSettings`) and click **Add Project**.
+4. Make sure the project row shows editor version **6000.3.24f1**. If not, click the version and pick it.
+5. Click the project to open it. The first open takes a few minutes while Unity builds `Library/`.
+6. In the **Project** window (bottom), go to `Assets > Scenes` and double-click **Main**.
+7. Click the **Game** tab. In the resolution dropdown at the top left ("Free Aspect"), click **+**, enter
+   Label `Phone`, Type *Fixed Resolution*, **1080 × 1920**, click **OK** and select it. Lower the
+   **Scale** slider if it's too big.
+8. Press **▶ Play** (top center).
+9. Try it:
+   - **FEED / DRINK / PLAY / STUDY:** the bars change and the mood line updates.
+   - **SLEEP:** the Energy bar refills; tap again to wake up.
+   - **SCENE:** the background changes.
+   - To see **hangry** and **sick** quickly, use demo mode (see *Tuning the stats*).
+10. Keep the **Console** tab open (Window → General → Console). It should show no red errors.
+11. Press **▶** again to stop. Changes made while playing are discarded.
+12. **Run the automated tests (optional):** **Window → General → Test Runner → PlayMode → Run All**.
+    All tests should be green.
 
 ### B. Other devices
 
