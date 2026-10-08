@@ -18,14 +18,15 @@ using UnityEngine.UI;
 ///   │ [☺]Happy    [z]Energy    │
 ///   │ [★]Smart                 │
 ///   ├──────────────────────────┤
-///   │   framed background      │  pet area (scene + hamster + dim overlay)
+///   │      ( speech bubble )   │  pet area: nothing overlaps it
+///   │          \/              │
 ///   │        (hamster)         │
-///   │  mood text               │
 ///   ├──────────────────────────┤
 ///   │ FEED   DRINK   PLAY      │  3x2 thumb-sized action buttons
 ///   │ STUDY  SLEEP   SCENE     │
 ///   └──────────────────────────┘
 ///
+/// The background fills the whole screen behind all of this.
 /// Everything is wired in code, so no Inspector setup is needed.
 /// </summary>
 public static class MainSceneBuilder
@@ -72,7 +73,7 @@ public static class MainSceneBuilder
 
         // ---------- Top panel: header + stat bars ----------
         var top = Rect("TopPanel", safeArea, new Vector2(0, 1), new Vector2(1, 1), new Vector2(30, -590), new Vector2(-30, -20));
-        Sliced(top.gameObject, Sprite("UI/Generated/panel.png"));
+        Sliced(top.gameObject, Sprite("UI/Generated/panel.png")).color = new Color(1f, 1f, 1f, 0.9f);
 
         var nameIcon = Rect("PetIcon", top, new Vector2(0, 1), new Vector2(0, 1), new Vector2(30, -125), new Vector2(130, -25));
         Img(nameIcon.gameObject, Sprite("UI/Buttons/hamster_face.png"), preserveAspect: true);
@@ -105,11 +106,11 @@ public static class MainSceneBuilder
         var energy = Small("EnergyBar", "ENERGY", "UI/Buttons/sleep_z.png", EnergyColor, 1, 1);
         var intelligence = Small("IntelligenceBar", "SMART", "UI/Buttons/star.png", IntelligenceColor, 0, 2);
 
-        // ---------- Bottom panel: action buttons ----------
-        var bottom = Rect("ActionBar", safeArea, Vector2.zero, new Vector2(1, 0), new Vector2(30, 20), new Vector2(-30, 540));
+        // ---------- Bottom panel: action buttons (2 rows x 3) ----------
+        var bottom = Rect("ActionBar", safeArea, Vector2.zero, new Vector2(1, 0), new Vector2(30, 20), new Vector2(-30, 440));
         var grid = bottom.gameObject.AddComponent<GridLayoutGroup>();
-        grid.cellSize = new Vector2(316, 245);
-        grid.spacing = new Vector2(24, 30);
+        grid.cellSize = new Vector2(316, 200);
+        grid.spacing = new Vector2(24, 20);
         grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
         grid.constraintCount = 3;
         grid.childAlignment = TextAnchor.MiddleCenter;
@@ -121,36 +122,19 @@ public static class MainSceneBuilder
         var sleep = ActionButton(bottom, "SleepButton", "SLEEP", Sprite("UI/Buttons/sleep_z.png"));
         var scene = ActionButton(bottom, "SceneButton", "SCENE", Sprite("UI/Buttons/home.png"));
 
-        // ---------- Middle: framed scene with the pet ----------
-        var petArea = Rect("PetArea", safeArea, Vector2.zero, Vector2.one, new Vector2(30, 560), new Vector2(-30, -610));
-
-        var mood = Text(petArea, "MoodText", PetName + " is happy to see you!", 56, Brown, TextAlignmentOptions.Center);
-        Place(mood.rectTransform, Vector2.zero, new Vector2(1, 0), Vector2.zero, new Vector2(0, 70));
-
-        var frameHolder = Rect("FrameHolder", petArea, Vector2.zero, Vector2.one, new Vector2(0, 80), Vector2.zero);
-        var frame = Rect("SceneFrame", frameHolder, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
-        var frameFit = frame.gameObject.AddComponent<AspectRatioFitter>();
-        frameFit.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
-        frameFit.aspectRatio = 493f / 391f; // indoor scene shape
-        Sliced(frame.gameObject, Sprite("UI/Generated/panel.png"));
-
-        // Viewport clips wider (outdoor) backgrounds to the frame.
-        var viewport = Rect("Viewport", frame, Vector2.zero, Vector2.one, new Vector2(14, 14), new Vector2(-14, -14));
-        viewport.gameObject.AddComponent<RectMask2D>();
-
-        var bg = Rect("Background", viewport, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+        // ---------- Full-screen background (behind everything, also under the notch) ----------
+        var bgLayer = Rect("BackgroundLayer", canvas.transform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        bgLayer.SetAsFirstSibling();
+        var bg = Rect("Background", bgLayer, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
         var bgImage = Img(bg.gameObject, Sprite("Backgrounds/cozy_home.png"));
         var bgFit = bg.gameObject.AddComponent<AspectRatioFitter>();
-        bgFit.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+        bgFit.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent; // fill the screen, crop the sides
         bgFit.aspectRatio = 493f / 391f;
 
-        var dim = Rect("DimOverlay", viewport, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        var dim = Rect("DimOverlay", bgLayer, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         Img(dim.gameObject, null).color = new Color(0.05f, 0.05f, 0.2f, 0f);
 
-        var pet = Rect("Pet", viewport, new Vector2(0.28f, 0.04f), new Vector2(0.72f, 0.56f), Vector2.zero, Vector2.zero);
-        Img(pet.gameObject, Sprite("Pet/Hamster/idle_01.png"), preserveAspect: true);
-
-        var switcher = frame.gameObject.AddComponent<BackgroundSwitcher>();
+        var switcher = bgLayer.gameObject.AddComponent<BackgroundSwitcher>();
         Set(switcher, "target", bgImage);
         Set(switcher, "fitter", bgFit);
         SetArray(switcher, "backgrounds", new Object[]
@@ -162,6 +146,43 @@ public static class MainSceneBuilder
             Sprite("Backgrounds/sunset_rooftop.png"),
             Sprite("Backgrounds/moonlit_bedroom.png"),
         });
+
+        // ---------- Middle: free space between the panels for the pet ----------
+        // Nothing overlaps this area, so the pet is never covered by UI.
+        var petArea = Rect("PetArea", safeArea, Vector2.zero, Vector2.one, new Vector2(30, 460), new Vector2(-30, -610));
+
+        // Pet stands near the bottom of the area; its size follows the area height.
+        var pet = Rect("Pet", petArea, new Vector2(0.5f, 0.03f), new Vector2(0.5f, 0.6f), Vector2.zero, Vector2.zero);
+        Img(pet.gameObject, Sprite("Pet/Hamster/idle_01.png"), preserveAspect: true);
+        var petFit = pet.gameObject.AddComponent<AspectRatioFitter>();
+        petFit.aspectMode = AspectRatioFitter.AspectMode.HeightControlsWidth;
+        petFit.aspectRatio = 208f / 187f;
+
+        // Speech bubble above the pet's head: sized to its text, tail points down.
+        var bubbleRt = Rect("SpeechBubble", petArea, new Vector2(0.5f, 0.62f), new Vector2(0.5f, 0.62f), Vector2.zero, Vector2.zero);
+        bubbleRt.pivot = new Vector2(0.5f, 0f);
+        bubbleRt.sizeDelta = new Vector2(760, 0);
+        Sliced(bubbleRt.gameObject, Sprite("UI/Generated/bubble.png")).raycastTarget = false;
+        var layout = bubbleRt.gameObject.AddComponent<VerticalLayoutGroup>();
+        layout.padding = new RectOffset(40, 40, 26, 34);
+        layout.childControlWidth = true;
+        layout.childControlHeight = true;
+        layout.childForceExpandWidth = true;
+        layout.childForceExpandHeight = false;
+        var fitter = bubbleRt.gameObject.AddComponent<ContentSizeFitter>();
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize; // hug the text
+        bubbleRt.gameObject.AddComponent<CanvasGroup>();
+
+        var speech = Text(bubbleRt, "Text", "Hi! I'm " + PetName + "!", 60, Brown, TextAlignmentOptions.Center);
+        // Messages are short (no wrapping); put a line break in a message for a second line.
+
+        var tail = Rect("Tail", bubbleRt, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(-27, -30), new Vector2(27, 6));
+        Img(tail.gameObject, Sprite("UI/Generated/bubble_tail.png"));
+        tail.gameObject.AddComponent<LayoutElement>().ignoreLayout = true;
+
+        var bubble = bubbleRt.gameObject.AddComponent<SpeechBubble>();
+        Set(bubble, "text", speech);
 
         // ---------- UIManager wiring ----------
         var ui = canvas.AddComponent<UIManager>();
@@ -179,7 +200,7 @@ public static class MainSceneBuilder
         Set(ui, "sceneButton", scene);
         Set(ui, "muteButton", mute);
         Set(ui, "muteIcon", muteIcon);
-        Set(ui, "moodText", mood);
+        Set(ui, "speechBubble", bubble);
         Set(ui, "backgrounds", switcher);
 
         // ---------- Game over (hidden until the pet gets sick) ----------
@@ -280,11 +301,11 @@ public static class MainSceneBuilder
         button.targetGraphic = bg;
         root.gameObject.AddComponent<PressBounce>();
 
-        var iconRt = Rect("Icon", root, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(-65, -150), new Vector2(65, -24));
+        var iconRt = Rect("Icon", root, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(-55, -122), new Vector2(55, -18));
         Img(iconRt.gameObject, icon, preserveAspect: true);
 
-        var text = Text(root, "Label", label, 64, Brown, TextAlignmentOptions.Center);
-        Place(text.rectTransform, Vector2.zero, new Vector2(1, 0), new Vector2(0, 28), new Vector2(0, 100));
+        var text = Text(root, "Label", label, 58, Brown, TextAlignmentOptions.Center);
+        Place(text.rectTransform, Vector2.zero, new Vector2(1, 0), new Vector2(0, 24), new Vector2(0, 84));
         return button;
     }
 
