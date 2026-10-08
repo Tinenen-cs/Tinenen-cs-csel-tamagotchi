@@ -3,9 +3,10 @@ Prepares UI sprites for the game (requires Python 3 + Pillow: pip install pillow
 
 1. Cleans the button sprites in Assets/Art/UI/Buttons: some were cut from a sheet and
    contain thin slivers of neighbouring sprites along their edges, which are trimmed off.
+   Sprites that are clipped in the pack (the star) are re-cut from the pack's source sheet.
 2. Cuts the round icons (smiley, heart, fork, droplet) out of Assets/Art/UI/Status/*.png
    into Assets/Art/UI/Icons/.
-3. Draws small pixel-art 9-slice frames (bar frame, bar fill, button tile, panel) in the
+3. Draws small pixel-art 9-slice frames (bar frame, bar fill, button tile, panel, speech bubble) in the
    asset pack's palette into Assets/Art/UI/Generated/.
 
 Safe to run repeatedly. Usage:  python Tools/make_ui_sprites.py
@@ -62,6 +63,38 @@ def clean_button(path):
         print(f"cleaned {os.path.basename(path)}: {w}x{h} -> {crop.size[0]}x{crop.size[1]}")
 
 
+# Sprites that are clipped in the pack's individual files, re-cut from the pack's full source
+# sheet (path relative to this project): name -> crop box (left, top, right, bottom).
+SHEET = os.path.join(os.path.dirname(__file__), "..", "..",
+                     "tamagotchi_unity_asset_pack(1)", "Source", "complete_generated_asset_sheet.png")
+SHEET_CUTS = {
+    "star.png": (712, 895, 763, 965),  # star.png in the pack is missing its left arm
+}
+
+
+def cut_from_sheet(box, dst):
+    """Crops a sprite from the source sheet and removes the cream background by flood fill."""
+    from collections import deque
+    im = Image.open(SHEET).convert("RGBA").crop(box)
+    w, h = im.size
+    px = im.load()
+    bg = px[0, 0]
+    near = lambda c: sum(abs(c[i] - bg[i]) for i in range(3)) < 40
+    queue = deque([(x, y) for x in range(w) for y in (0, h - 1)] + [(x, y) for y in range(h) for x in (0, w - 1)])
+    seen = set()
+    while queue:
+        x, y = queue.popleft()
+        if (x, y) in seen or not (0 <= x < w and 0 <= y < h):
+            continue
+        seen.add((x, y))
+        if not near(px[x, y]):
+            continue
+        px[x, y] = (0, 0, 0, 0)
+        queue.extend([(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)])
+    im.crop(im.getbbox()).save(dst)
+    print(f"re-cut {os.path.basename(dst)} from source sheet")
+
+
 def cut_status_icon(src, dst):
     """The icon is a circle at the left end of each status bar; keep only that circle."""
     im = Image.open(src).convert("RGBA")
@@ -100,6 +133,9 @@ def rounded_box(size, fill, outline=None, radius=2, shadow=None):
 
 def main():
     btn_dir = os.path.join(ROOT, "Buttons")
+    if os.path.isfile(SHEET):
+        for name, box in SHEET_CUTS.items():
+            cut_from_sheet(box, os.path.join(btn_dir, name))
     for f in sorted(os.listdir(btn_dir)):
         if f.endswith(".png"):
             clean_button(os.path.join(btn_dir, f))
@@ -116,6 +152,13 @@ def main():
     rounded_box((8, 6), WHITE, None, radius=2).save(os.path.join(gen, "bar_fill.png"))
     rounded_box((20, 20), CREAM, OUTLINE, radius=3, shadow=SHADOW).save(os.path.join(gen, "button_tile.png"))
     rounded_box((20, 20), CREAM, OUTLINE_SOFT, radius=4).save(os.path.join(gen, "panel.png"))
+    # Speech bubble: a 9-slice body plus a separate tail that points down at the pet.
+    rounded_box((20, 16), CREAM, OUTLINE, radius=4).save(os.path.join(gen, "bubble.png"))
+    tail = Image.new("RGBA", (9, 6), (0, 0, 0, 0))
+    ImageDraw.Draw(tail).polygon([(0, 0), (8, 0), (4, 5)], fill=CREAM, outline=OUTLINE)
+    for x in range(1, 8):  # open the top edge so the tail merges into the body
+        tail.putpixel((x, 0), CREAM)
+    tail.save(os.path.join(gen, "bubble_tail.png"))
     print("generated frames in", gen)
 
 
