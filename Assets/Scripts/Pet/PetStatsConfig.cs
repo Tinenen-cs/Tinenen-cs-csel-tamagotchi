@@ -16,7 +16,6 @@ namespace Tamagotchi.Pet
 
         [Header("Starting values (new game / restart)")]
         [Range(0, 100)] public float startHunger = 80f;
-        [Range(0, 100)] public float startThirst = 80f;
         [Range(0, 100)] public float startHappiness = 80f;
         [Range(0, 100)] public float startEnergy = 80f;
         [Range(0, 100)] public float startIntelligence = 10f;
@@ -24,7 +23,6 @@ namespace Tamagotchi.Pet
 
         [Header("Decay per minute (awake)")]
         [Min(0f)] public float hungerDecay = 6f;
-        [Min(0f)] public float thirstDecay = 7f;
         [Min(0f)] public float happinessDecay = 4f;
         [Min(0f)] public float energyDecay = 3f;
         [Min(0f)] public float intelligenceDecay = 1f;
@@ -32,13 +30,13 @@ namespace Tamagotchi.Pet
         [Header("Sleeping")]
         [Tooltip("Energy gained per SECOND while sleeping. The pet wakes up by itself at 100.")]
         [Min(0f)] public float sleepEnergyPerSecond = 4f;
-        [Tooltip("Hunger/thirst/happiness/intelligence decay is multiplied by this while asleep.")]
+        [Tooltip("Hunger/happiness/intelligence decay is multiplied by this while asleep.")]
         [Range(0, 1)] public float sleepDecayMultiplier = 0.5f;
 
         [Header("Health")]
-        [Tooltip("Health lost per minute for EACH of hunger / thirst that is at 0.")]
-        [Min(0f)] public float healthDrainPerEmptyStat = 12f;
-        [Tooltip("Health regained per minute while hunger and thirst are both above the 'well fed' level.")]
+        [Tooltip("Health lost per minute while hunger is at 0.")]
+        [Min(0f)] public float healthDrainWhenStarving = 12f;
+        [Tooltip("Health regained per minute while hunger is above the 'well fed' level.")]
         [Min(0f)] public float healthRegen = 3f;
         [Range(0, 100)] public float wellFedLevel = 50f;
 
@@ -53,13 +51,13 @@ namespace Tamagotchi.Pet
         [Header("Action effects (instant)")]
         public float feedHunger = 25f;
         public float feedHappiness = 3f;
-        public float drinkThirst = 25f;
         public float studyIntelligence = 12f;
         public float studyEnergyCost = 10f;
         public float studyHappinessCost = 5f;
         public float playHappiness = 20f;
         public float playEnergyCost = 8f;
         public float playHungerCost = 3f;
-        public float playThirstCost = 3f;
+        [Tooltip("Happiness lost when the pet is scolded.")]
+        public float scoldHappinessCost = 10f;
     }
 }

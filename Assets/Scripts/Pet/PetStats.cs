@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Tamagotchi.Pet
 {
     /// <summary>
-    /// The pet's six stats (0-100) and the rules that change them:
+    /// The pet's five stats (0-100) and the rules that change them:
     /// decay over time, action effects, sleeping, health, hangry and sick.
     /// Contains no UI, animation or audio code; other systems listen to its events.
     /// </summary>
@@ -16,7 +16,6 @@ namespace Tamagotchi.Pet
         private const float MaxStepSeconds = 1f;
 
         public float Hunger { get; private set; }
-        public float Thirst { get; private set; }
         public float Happiness { get; private set; }
         public float Energy { get; private set; }
         public float Intelligence { get; private set; }
@@ -68,7 +67,6 @@ namespace Tamagotchi.Pet
         public void ResetToStart()
         {
             Hunger = config.startHunger;
-            Thirst = config.startThirst;
             Happiness = config.startHappiness;
             Energy = config.startEnergy;
             Intelligence = config.startIntelligence;
@@ -81,11 +79,10 @@ namespace Tamagotchi.Pet
         }
 
         /// <summary>Restores saved values (used by the save system).</summary>
-        public void SetValues(float hunger, float thirst, float happiness, float energy, float intelligence,
+        public void SetValues(float hunger, float happiness, float energy, float intelligence,
             float health, bool sleeping, float starvingSeconds)
         {
             Hunger = Clamp(hunger);
-            Thirst = Clamp(thirst);
             Happiness = Clamp(happiness);
             Energy = Clamp(energy);
             Intelligence = Clamp(intelligence);
@@ -124,7 +121,6 @@ namespace Tamagotchi.Pet
             float slow = IsSleeping ? config.sleepDecayMultiplier : 1f;
 
             Hunger = Clamp(Hunger - config.hungerDecay * slow * minutes);
-            Thirst = Clamp(Thirst - config.thirstDecay * slow * minutes);
             Happiness = Clamp(Happiness - config.happinessDecay * slow * minutes);
             Intelligence = Clamp(Intelligence - config.intelligenceDecay * slow * minutes);
 
@@ -138,11 +134,10 @@ namespace Tamagotchi.Pet
                 Energy = Clamp(Energy - config.energyDecay * minutes);
             }
 
-            // Health: drains while starving/dehydrated, slowly heals while well fed.
-            int empty = (Hunger <= 0f ? 1 : 0) + (Thirst <= 0f ? 1 : 0);
-            if (empty > 0)
-                Health = Clamp(Health - config.healthDrainPerEmptyStat * empty * minutes);
-            else if (Hunger >= config.wellFedLevel && Thirst >= config.wellFedLevel)
+            // Health: drains while starving, slowly heals while well fed.
+            if (Hunger <= 0f)
+                Health = Clamp(Health - config.healthDrainWhenStarving * minutes);
+            else if (Hunger >= config.wellFedLevel)
                 Health = Clamp(Health + config.healthRegen * minutes);
 
             StarvingSeconds = Hunger <= 0f ? StarvingSeconds + dt : 0f;
@@ -164,10 +159,11 @@ namespace Tamagotchi.Pet
             return AfterAction();
         }
 
-        public bool Drink()
+        /// <summary>Scolding: the pet gets sad (Happiness goes down).</summary>
+        public bool Scold()
         {
             if (IsSick) return false;
-            Thirst = Clamp(Thirst + config.drinkThirst);
+            Happiness = Clamp(Happiness - config.scoldHappinessCost);
             return AfterAction();
         }
 
@@ -181,14 +177,13 @@ namespace Tamagotchi.Pet
             return AfterAction();
         }
 
-        /// <summary>Raises Happiness, costs a little Energy/Hunger/Thirst. Refused when too tired.</summary>
+        /// <summary>Raises Happiness, costs a little Energy and Hunger. Refused when too tired.</summary>
         public bool Play()
         {
             if (IsSick || Energy < config.playEnergyCost) return false;
             Happiness = Clamp(Happiness + config.playHappiness);
             Energy = Clamp(Energy - config.playEnergyCost);
             Hunger = Clamp(Hunger - config.playHungerCost);
-            Thirst = Clamp(Thirst - config.playThirstCost);
             return AfterAction();
         }
 

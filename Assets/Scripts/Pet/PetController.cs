@@ -9,7 +9,7 @@ namespace Tamagotchi.Pet
     /// <summary>Everything the pet can visibly be doing.</summary>
     public enum PetState
     {
-        Idle, Eating, Drinking, Studying, Sleeping, Playing, Happy, Sad, Crying, Hangry, Sick
+        Idle, Eating, Studying, Sleeping, Playing, Happy, Sad, Crying, Hangry, Sick
     }
 
     /// <summary>Frames used for one state.</summary>
@@ -27,7 +27,7 @@ namespace Tamagotchi.Pet
     ///  1. Base state, from the stats (highest priority first):
     ///     Sick > Sleeping > Hangry > Crying (low health) > Sad (low happiness) > Idle
     ///  2. Short reactions to buttons, shown on top of the base state for a moment:
-    ///     Eating, Drinking, Studying, Playing -> Happy, or Sad when the pet refuses.
+    ///     Eating, Studying, Playing -> Happy, Sad when scolded or when the pet refuses.
     ///
     /// Each state plays its flip-book animation plus a small effect (bounce, shake, tint).
     /// Sleeping also dims the scene and switches to the night background.
@@ -117,7 +117,7 @@ namespace Tamagotchi.Pet
             switch (action)
             {
                 case PetAction.Feed: StartReaction(PetState.Eating, reactionSeconds); break;
-                case PetAction.Drink: StartReaction(PetState.Drinking, reactionSeconds); break;
+                case PetAction.Scold: StartReaction(PetState.Sad, reactionSeconds); break;
                 case PetAction.Study: StartReaction(PetState.Studying, reactionSeconds); break;
                 case PetAction.Play:
                     StartReaction(PetState.Playing, reactionSeconds);
@@ -238,7 +238,6 @@ namespace Tamagotchi.Pet
                     tint = sickTint;
                     break;
                 case PetState.Eating:
-                case PetState.Drinking:
                     offset.y = Mathf.Abs(Mathf.Sin(t * 12f)) * bounceHeight * 0.25f;
                     break;
             }
