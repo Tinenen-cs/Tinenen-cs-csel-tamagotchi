@@ -7,13 +7,10 @@ and it gets **sick**.
 
 <p align="center"><img src="Docs/screenshot.png" alt="Game screen" width="320"></p>
 
-<p align="center"><img src="Docs/states_overview.png" alt="Sleeping, hangry, playing and sick states" width="720"></p>
-
-<p align="center"><img src="Docs/screenshot_landscape.png" alt="Wide window: UI stays a centered phone column" width="480"></p>
+<p align="center"><img src="Docs/states_overview.png" alt="Eating, sleeping, hangry and playing states" width="720"></p>
 
 > Screenshots generated with **Tamagotchi → Capture Screenshot** / **Capture State Screenshots**
-> (states left to right: sleeping, hangry, playing at the beach, sick) / **Capture Landscape Check**
-> (a wide window: the UI stays a centered phone column). A GIF of the gameplay will be added later.
+> (states left to right: eating, sleeping in the bed, hangry, playing at the beach).
 
 ## Status
 
@@ -42,20 +39,23 @@ and it gets **sick**.
 - **Full-screen scenes:** the background fills the whole screen behind the UI. The **Scene** button
   cycles through 6 pixel-art backgrounds (default: cozy home). The stats sit at the top and the
   buttons at the bottom, leaving the middle clear so nothing covers the pet.
-- **Speech bubble** above the pet's head reacts to every action ("Yum yum!", "Too tired to study...").
+- **Props from the asset pack:** the food bowl appears while eating, the pet sleeps in the soft bed, and
+  every scene has matching props beside the pet (hamster house + water bottle at home, sign + fence in
+  the garden, palm tree + umbrella at the beach, tree stump + rocks by the stream, plants on the rooftop).
+- **Speech bubble** in the asset pack's style (hamster face, text, heart) above the pet reacts to every action ("Yum yum!", "Too tired to study...").
   Messages fade after a few seconds; warnings like **"I'm HANGRY! Feed me!"** stay until fixed.
 - **Animated pet with a state machine** (`PetController`). It reacts visibly to every button and to its stats:
 
   | State | When | Animation and effect |
   |-------|------|-------------|
   | Idle | Nothing special going on | `idle` frames, slow loop |
-  | Eating | FEED (2 s) | `eating` frames + little hops |
+  | Eating | FEED (2 s) | `eating` frames + little hops, food bowl beside the pet |
   | Studying | STUDY (2 s) | `studying` frames |
   | Playing → Happy | PLAY (2 s, then 1.2 s happy) | `playing` then `happy` frames + bouncing |
   | Sad | SCOLD (2 s), Happiness below 25%, or the pet refuses (too tired) | `sad` frames |
   | Crying | Health below 25% | `crying` frames |
   | Hangry | Hunger below 25% | `sad` frames + red pulse + angry shake |
-  | Sleeping | SLEEP | `sleeping` frames; the screen dims and switches to the moonlit bedroom |
+  | Sleeping | SLEEP | `sleeping` frames in the soft bed; the screen dims and switches to the moonlit bedroom |
   | Sick | Health 0 / starving too long | `crying` frames + green tint; game-over card (animated) |
 
   Priority when several apply: Sick > Sleeping > Hangry > Crying > Sad > Idle. Button reactions play on
@@ -126,6 +126,7 @@ Assets/
     UI/SpeechBubble.cs  pop-in speech bubble above the pet (normal or sticky messages)
     UI/SafeArea.cs    keeps UI clear of notches and cut-outs
     UI/PortraitFrame.cs keeps the UI a centered 9:16 column in wide windows
+    World/SceneDecor.cs  props beside the pet that match the current background
     World/BackgroundSwitcher.cs  full-screen background: Scene button cycling + temporary override (used by Sleep)
     Pet/PetStats.cs        the five stats: decay, actions, sleep, health, hangry, sick
     Pet/PetStatsConfig.cs  ScriptableObject with all tuning numbers
@@ -151,7 +152,7 @@ will be listed here with its source and license._
 | Asset | Source | License |
 |-------|--------|---------|
 | Hamster sprites, backgrounds, props, UI sprites | Supplied by the project owner (tamagotchi asset pack) | Project owner's own assets |
-| `Assets/Art/UI/Icons/*`, `Assets/Art/UI/Generated/*` (incl. speech bubble) | Derived from / drawn to match the pack by `Tools/make_ui_sprites.py` | Same as above |
+| `Assets/Art/UI/Icons/*`, `Assets/Art/UI/Generated/*` (incl. the speech bubble made from the pack's `chat_bubble.png`) | Derived from / drawn to match the pack by `Tools/make_ui_sprites.py` | Same as above |
 | `Assets/Art/UI/Buttons/star.png`, `music.png`, `sleep_z.png` | Re-cut from the pack's `Source/complete_generated_asset_sheet.png` (the pack's own copies are clipped) | Same as above |
 | `Assets/Art/Fonts/KenneyPixel.ttf` | [Kenney Fonts](https://kenney.nl/assets/kenney-fonts) by Kenney | CC0 1.0 (`KenneyFonts-License.txt`) |
 | `Assets/TextMesh Pro/*` (LiberationSans etc.) | Unity TextMesh Pro essential resources | Unity Companion License / SIL OFL (LiberationSans) |
