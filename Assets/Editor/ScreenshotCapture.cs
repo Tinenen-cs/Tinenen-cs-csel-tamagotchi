@@ -1,25 +1,100 @@
+using System;
 using System.IO;
+using Tamagotchi.UI;
+using TMPro;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.UI;
+using Object = UnityEngine.Object;
 
 /// <summary>
-/// Renders Main.unity at 1080x1920 into Docs/screenshot.png without entering Play mode.
+/// Renders Main.unity at 1080x1920 into Docs/ without entering Play mode.
 ///
-/// Editor:       menu Tamagotchi > Capture Screenshot
+/// Editor:       menu Tamagotchi > Capture Screenshot          (Docs/screenshot.png)
+///               menu Tamagotchi > Capture State Screenshots   (Docs/state_*.png)
 /// Command line: Unity -batchmode -quit -projectPath . -executeMethod ScreenshotCapture.Capture
-/// (do not pass -nographics; rendering needs a GPU)
+///               (or ScreenshotCapture.CaptureStates; do not pass -nographics, rendering needs a GPU)
 /// </summary>
 public static class ScreenshotCapture
 {
-    private const string OutputPath = "Docs/screenshot.png";
+    private const string Hamster = "Assets/Art/Pet/Hamster/";
+    private const string Backgrounds = "Assets/Art/Backgrounds/";
 
     [MenuItem("Tamagotchi/Capture Screenshot")]
     public static void Capture()
     {
-        var scene = EditorSceneManager.OpenScene(ProjectSetup.MainScenePath, OpenSceneMode.Single);
-        int w = (int)ProjectSetup.ReferenceResolution.x, h = (int)ProjectSetup.ReferenceResolution.y;
+        Render("Docs/screenshot.png", null);
+    }
 
+    /// <summary>Poses the scene in a few states (sleeping, hangry, playing, sick) and renders each.</summary>
+    [MenuItem("Tamagotchi/Capture State Screenshots")]
+    public static void CaptureStates()
+    {
+        Render("Docs/state_sleeping.png", () =>
+        {
+            SetPet("sleeping_02");
+            SetBackground("moonlit_bedroom");
+            Find<Image>("DimOverlay").color = new Color(0.05f, 0.05f, 0.2f, 0.45f);
+            SetBubble("Zzz...");
+            Find<StatBar>("EnergyBar").SetValue(35);
+        });
+        Render("Docs/state_hangry.png", () =>
+        {
+            SetPet("sad_02");
+            Find<Image>("Pet").color = new Color(1f, 0.6f, 0.55f);
+            SetBubble("I'm HANGRY! Feed me!");
+            Find<StatBar>("HungerBar").SetValue(14);
+            Find<StatBar>("HappinessBar").SetValue(48);
+        });
+        Render("Docs/state_playing.png", () =>
+        {
+            SetPet("playing_02");
+            SetBackground("beach");
+            SetBubble("Wheee! Fun!");
+        });
+        Render("Docs/state_sick.png", () =>
+        {
+            SetPet("crying_02");
+            Find<Image>("Pet").color = new Color(0.75f, 0.95f, 0.7f);
+            SetBubble("I feel sick...");
+            Find<StatBar>("HungerBar").SetValue(0);
+            Find<StatBar>("HealthBar").SetValue(0);
+            Find<RectTransform>("GameOverPanel").gameObject.SetActive(true);
+        });
+    }
+
+    // ---------- posing helpers ----------
+
+    private static T Find<T>(string name) where T : Component
+    {
+        foreach (var c in Object.FindObjectsByType<T>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            if (c.gameObject.name == name) return c;
+        throw new Exception("[ScreenshotCapture] Not found: " + name);
+    }
+
+    private static void SetPet(string frame) =>
+        Find<Image>("Pet").sprite = AssetDatabase.LoadAssetAtPath<Sprite>(Hamster + frame + ".png");
+
+    private static void SetBubble(string text) =>
+        Find<RectTransform>("SpeechBubble").GetComponentInChildren<TextMeshProUGUI>().text = text;
+
+    private static void SetBackground(string name)
+    {
+        var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(Backgrounds + name + ".png");
+        var bg = Find<Image>("Background");
+        bg.sprite = sprite;
+        bg.GetComponent<AspectRatioFitter>().aspectRatio = sprite.rect.width / sprite.rect.height;
+    }
+
+    // ---------- rendering ----------
+
+    private static void Render(string outputPath, Action pose)
+    {
+        var scene = EditorSceneManager.OpenScene(ProjectSetup.MainScenePath, OpenSceneMode.Single);
+        pose?.Invoke();
+
+        int w = (int)ProjectSetup.ReferenceResolution.x, h = (int)ProjectSetup.ReferenceResolution.y;
         var cam = Camera.main;
         var canvas = Object.FindAnyObjectByType<Canvas>();
         var rt = new RenderTexture(w, h, 24, RenderTextureFormat.ARGB32);
@@ -41,14 +116,14 @@ public static class ScreenshotCapture
         tex.Apply();
         RenderTexture.active = prev;
 
-        Directory.CreateDirectory(Path.GetDirectoryName(OutputPath));
-        File.WriteAllBytes(OutputPath, tex.EncodeToPNG());
+        Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
+        File.WriteAllBytes(outputPath, tex.EncodeToPNG());
 
         cam.targetTexture = null;
         Object.DestroyImmediate(rt);
         Object.DestroyImmediate(tex);
-        // Reload from disk so the temporary canvas change is never saved.
+        // Reload from disk so the temporary changes are never saved.
         EditorSceneManager.OpenScene(scene.path, OpenSceneMode.Single);
-        Debug.Log("[ScreenshotCapture] Saved " + Path.GetFullPath(OutputPath));
+        Debug.Log("[ScreenshotCapture] Saved " + Path.GetFullPath(outputPath));
     }
 }
