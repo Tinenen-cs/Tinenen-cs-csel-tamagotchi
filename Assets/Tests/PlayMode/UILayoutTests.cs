@@ -33,6 +33,16 @@ namespace Tamagotchi.Tests
         }
 
         [Test]
+        public void PortraitFrame_KeepsUIPhoneShaped()
+        {
+            Assert.IsNotNull(Object.FindAnyObjectByType<PortraitFrame>(), "UI should sit in a PortraitFrame.");
+            // Wide window: column limited to 9:16 of the height.
+            Assert.AreEqual(1080f, PortraitFrame.FrameWidth(3413f, 1920f, 9f / 16f), 0.5f);
+            // Phone (portrait or taller): full width.
+            Assert.AreEqual(1080f, PortraitFrame.FrameWidth(1080f, 2340f, 9f / 16f), 0.5f);
+        }
+
+        [Test]
         public void HungerBar_IsRedWhenLow_GreenWhenFull()
         {
             _ui.HungerBar.SetValue(5);
