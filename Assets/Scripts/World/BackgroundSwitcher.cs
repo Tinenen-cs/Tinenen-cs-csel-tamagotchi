@@ -19,6 +19,7 @@ namespace Tamagotchi.World
 
         private int _index;
         private Sprite _override;
+        private float _alignX = 0.5f; // 0 = show the left edge, 0.5 = middle, 1 = right edge
 
         /// <summary>Raised whenever the chosen background index changes (for saving).</summary>
         public event Action<int> IndexChanged;
@@ -41,10 +42,15 @@ namespace Tamagotchi.World
             IndexChanged?.Invoke(_index);
         }
 
-        /// <summary>Temporarily shows another background (the player's choice is kept).</summary>
-        public void ShowOverride(Sprite sprite)
+        /// <summary>
+        /// Temporarily shows another background (the player's choice is kept).
+        /// <paramref name="alignX"/> picks which part of a wider-than-screen image is visible
+        /// (0 = left edge, 0.5 = middle, 1 = right edge), e.g. to keep a painted bed out of view.
+        /// </summary>
+        public void ShowOverride(Sprite sprite, float alignX = 0.5f)
         {
             _override = sprite;
+            _alignX = Mathf.Clamp01(alignX);
             Refresh();
         }
 
@@ -52,6 +58,7 @@ namespace Tamagotchi.World
         public void ClearOverride()
         {
             _override = null;
+            _alignX = 0.5f;
             Refresh();
         }
 
@@ -63,6 +70,11 @@ namespace Tamagotchi.World
 
             if (fitter != null && target.sprite != null)
                 fitter.aspectRatio = target.sprite.rect.width / target.sprite.rect.height;
+
+            // The envelope fitter stretches the image over the screen; the pivot slides the extra
+            // width, so 0..1 always keeps the screen covered.
+            var rt = target.rectTransform;
+            rt.pivot = new Vector2(_override != null ? _alignX : 0.5f, rt.pivot.y);
         }
     }
 }

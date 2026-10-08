@@ -138,6 +138,7 @@ Assets/
 Docs/                 screenshots
 Tools/
   verify.sh           batch-mode check: compile, regenerate scene, run tests
+  screenshots.sh      regenerates Docs/screenshot.png and Docs/states_overview.png
   make_ui_sprites.py  cleans button sprites, cuts icons, draws frames (Python + Pillow)
 ```
 
@@ -260,6 +261,7 @@ git pull origin main                    # get the latest
 git checkout -b feature/short-name      # new branch per change
 # ...make changes in Unity, then:
 Tools/verify.sh                          # make sure it compiles and the scene runs clean
+Tools/screenshots.sh                     # refresh the README screenshots (Unity closed)
 git add -A && git commit -m "Describe the change"
 git push -u origin feature/short-name
 gh pr create --base main --fill          # or open the PR on github.com
