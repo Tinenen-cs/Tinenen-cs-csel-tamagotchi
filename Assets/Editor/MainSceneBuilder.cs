@@ -71,6 +71,11 @@ public static class MainSceneBuilder
     {
         _font = EnsureFontAsset();
 
+        // Phone-shaped column for all UI (stays 9:16 in wide windows; full screen on phones).
+        var frame = Rect("PhoneFrame", safeArea, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
+        frame.gameObject.AddComponent<PortraitFrame>();
+        safeArea = frame;
+
         // ---------- Top panel: header + stat bars ----------
         var top = Rect("TopPanel", safeArea, new Vector2(0, 1), new Vector2(1, 1), new Vector2(30, -590), new Vector2(-30, -20));
         Sliced(top.gameObject, Sprite("UI/Generated/panel.png")).color = new Color(1f, 1f, 1f, 0.9f);

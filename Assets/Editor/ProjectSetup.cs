@@ -75,15 +75,17 @@ public static class ProjectSetup
         esGo.AddComponent<EventSystem>();
         esGo.AddComponent<InputSystemUIInputModule>();
 
-        // Canvas: Scale With Screen Size, 1080x1920, match 0.5.
+        // Canvas: Scale With Screen Size, reference 1080x1920.
         var canvasGo = new GameObject("Canvas", typeof(RectTransform));
         var canvas = canvasGo.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
         var scaler = canvasGo.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = ReferenceResolution;
-        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
-        scaler.matchWidthOrHeight = 0.5f;
+        // Expand: the whole 1080x1920 layout always fits (tall phones get extra height,
+        // wide windows extra width, which PortraitFrame leaves to the background).
+        scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
+        scaler.matchWidthOrHeight = 0.5f; // only used if the mode is switched back to MatchWidthOrHeight
         canvasGo.AddComponent<GraphicRaycaster>();
 
         // Safe-area root: all gameplay UI goes under this.
