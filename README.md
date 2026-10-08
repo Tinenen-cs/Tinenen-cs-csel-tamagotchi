@@ -9,8 +9,11 @@ and it gets **sick**.
 
 <p align="center"><img src="Docs/states_overview.png" alt="Sleeping, hangry, playing and sick states" width="720"></p>
 
+<p align="center"><img src="Docs/screenshot_landscape.png" alt="Wide window: UI stays a centered phone column" width="480"></p>
+
 > Screenshots generated with **Tamagotchi → Capture Screenshot** / **Capture State Screenshots**
-> (states left to right: sleeping, hangry, playing at the beach, sick). A GIF of the gameplay will be added later.
+> (states left to right: sleeping, hangry, playing at the beach, sick) / **Capture Landscape Check**
+> (a wide window: the UI stays a centered phone column). A GIF of the gameplay will be added later.
 
 ## Status
 
@@ -83,6 +86,14 @@ and it gets **sick**.
 4. **Demo mode:** set **Time Scale** to `10` (or `30`) to watch the hunger bar drain, go hangry and get
    sick in about a minute. Set it back to `1` for normal play.
 
+## Screen layout
+
+- Portrait 9:16, Canvas Scaler **Scale With Screen Size**, reference **1080×1920**, safe area respected.
+- Screen Match Mode is **Expand** (not *Match 0.5*): the whole 1080×1920 layout always fits. Taller phones
+  get extra room around the pet, and wide windows (desktop, browser, the Editor's *Free Aspect*) keep
+  the UI in a centered 9:16 column (`PortraitFrame`) while the background fills the window. *Match 0.5*
+  squashed the layout in wide windows and clipped the button row on extra-tall phones.
+
 ## Unity version and packages
 
 - **Unity 6.3 LTS — `6000.3.24f1`**
@@ -114,6 +125,7 @@ Assets/
     UI/PressBounce.cs squash-and-spring feedback on button press
     UI/SpeechBubble.cs  pop-in speech bubble above the pet (normal or sticky messages)
     UI/SafeArea.cs    keeps UI clear of notches and cut-outs
+    UI/PortraitFrame.cs keeps the UI a centered 9:16 column in wide windows
     World/BackgroundSwitcher.cs  full-screen background: Scene button cycling + temporary override (used by Sleep)
     Pet/PetStats.cs        the six stats: decay, actions, sleep, health, hangry, sick
     Pet/PetStatsConfig.cs  ScriptableObject with all tuning numbers
@@ -214,6 +226,11 @@ will be listed here with its source and license._
   <https://tinenen-cs.github.io/Tinenen-cs-csel-tamagotchi/>.
 
 ## Troubleshooting
+
+- **The UI looks squashed or the buttons overlap the room (Scene/Game view):** the Game view is on
+  *Free Aspect* (a wide shape). Pick **Phone (1080×1920)** in the Game view's resolution dropdown (see
+  *Test-run in the Unity Editor*). Since the portrait-frame fix, wide windows (desktop, browser) also
+  keep the UI as a centered phone-shaped column with the room filling the rest of the window.
 
 - **"Missing scene" or empty Hierarchy:** open `Assets/Scenes/Main.unity`, or run
   **Tamagotchi → Setup Project** from the menu bar to regenerate it.
