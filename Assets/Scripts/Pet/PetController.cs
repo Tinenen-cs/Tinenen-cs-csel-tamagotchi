@@ -30,7 +30,8 @@ namespace Tamagotchi.Pet
     ///     Eating, Studying, Playing -> Happy, Sad when scolded or when the pet refuses.
     ///
     /// Each state plays its flip-book animation plus a small effect (bounce, shake, tint).
-    /// Sleeping also dims the scene and switches to the night background.
+    /// Sleeping shows the bed, dims the scene and switches to the night background;
+    /// eating shows the food bowl.
     /// </summary>
     public class PetController : MonoBehaviour
     {
@@ -47,6 +48,14 @@ namespace Tamagotchi.Pet
         [SerializeField] private Sprite sleepBackground;
         [SerializeField] private Image dimOverlay;
         [Range(0, 1)] [SerializeField] private float sleepDim = 0.45f;
+        [Tooltip("Bed the pet lies on while sleeping (shown only then).")]
+        [SerializeField] private GameObject bedProp;
+        [Tooltip("How far the pet is lifted onto the bed, as a fraction of its height.")]
+        [SerializeField] private float sleepLift = 0.28f;
+
+        [Header("Eating")]
+        [Tooltip("Food bowl shown beside the pet while it eats.")]
+        [SerializeField] private GameObject foodProp;
 
         [Header("Reaction timing (seconds)")]
         [SerializeField] private float reactionSeconds = 2f;
@@ -187,6 +196,10 @@ namespace Tamagotchi.Pet
                 if (a.state == state) fps = a.fps;
             animator.Play(FramesFor(state), fps);
 
+            // Props that belong to a state: the bed for sleeping, the bowl for eating.
+            if (bedProp != null) bedProp.SetActive(state == PetState.Sleeping);
+            if (foodProp != null) foodProp.SetActive(state == PetState.Eating);
+
             // Night scene while asleep.
             if (backgrounds != null)
             {
@@ -236,6 +249,9 @@ namespace Tamagotchi.Pet
                     break;
                 case PetState.Sick:
                     tint = sickTint;
+                    break;
+                case PetState.Sleeping:
+                    offset.y = sleepLift * _petRect.rect.height; // lying on the bed
                     break;
                 case PetState.Eating:
                     offset.y = Mathf.Abs(Mathf.Sin(t * 12f)) * bounceHeight * 0.25f;
