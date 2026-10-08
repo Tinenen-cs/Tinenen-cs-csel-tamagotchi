@@ -161,8 +161,8 @@ public static class MainSceneBuilder
         spotFit.aspectMode = AspectRatioFitter.AspectMode.HeightControlsWidth;
         spotFit.aspectRatio = 208f / 187f;
 
-        // Bed: a little wider than the lying hamster (1.05 x frame width), behind it.
-        var bed = Rect("Bed", spot, new Vector2(-0.025f, -0.04f), new Vector2(1.025f, 0.946f), Vector2.zero, Vector2.zero);
+        // Bed: 1.25 x the frame width so the whole cushion shows around the lying hamster, behind it.
+        var bed = Rect("Bed", spot, new Vector2(-0.125f, -0.04f), new Vector2(1.125f, 1.133f), Vector2.zero, Vector2.zero);
         Img(bed.gameObject, Sprite("Props/Home/soft_bed.png"), preserveAspect: true);
         bed.gameObject.SetActive(false);
 
