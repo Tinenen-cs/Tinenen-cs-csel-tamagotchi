@@ -119,7 +119,7 @@ will be listed here with its source and license._
 |-------|--------|---------|
 | Hamster sprites, backgrounds, props, UI sprites | Supplied by the project owner (tamagotchi asset pack) | Project owner's own assets |
 | `Assets/Art/UI/Icons/*`, `Assets/Art/UI/Generated/*` (incl. speech bubble) | Derived from / drawn to match the pack by `Tools/make_ui_sprites.py` | Same as above |
-| `Assets/Art/UI/Buttons/star.png` | Re-cut from the pack's `Source/complete_generated_asset_sheet.png` (the pack's own `star.png` is clipped) | Same as above |
+| `Assets/Art/UI/Buttons/star.png`, `music.png`, `sleep_z.png` | Re-cut from the pack's `Source/complete_generated_asset_sheet.png` (the pack's own copies are clipped) | Same as above |
 | `Assets/Art/Fonts/KenneyPixel.ttf` | [Kenney Fonts](https://kenney.nl/assets/kenney-fonts) by Kenney | CC0 1.0 (`KenneyFonts-License.txt`) |
 | `Assets/TextMesh Pro/*` (LiberationSans etc.) | Unity TextMesh Pro essential resources | Unity Companion License / SIL OFL (LiberationSans) |
 
