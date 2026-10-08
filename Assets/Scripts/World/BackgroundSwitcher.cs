@@ -23,6 +23,9 @@ namespace Tamagotchi.World
         /// <summary>Raised whenever the chosen background index changes (for saving).</summary>
         public event Action<int> IndexChanged;
 
+        /// <summary>Raised whenever the background on screen changes (incl. the sleep override).</summary>
+        public event Action<Sprite> DisplayChanged;
+
         public int Index => _index;
         public int Count => backgrounds.Length;
         public Sprite Current => target != null ? target.sprite : null;
@@ -63,6 +66,7 @@ namespace Tamagotchi.World
 
             if (fitter != null && target.sprite != null)
                 fitter.aspectRatio = target.sprite.rect.width / target.sprite.rect.height;
+            DisplayChanged?.Invoke(target.sprite);
         }
     }
 }

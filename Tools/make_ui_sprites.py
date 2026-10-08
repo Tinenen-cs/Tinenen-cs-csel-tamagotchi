@@ -6,7 +6,8 @@ Prepares UI sprites for the game (requires Python 3 + Pillow: pip install pillow
    Sprites that are clipped in the pack (the star) are re-cut from the pack's source sheet.
 2. Cuts the round icons (smiley, heart, fork, droplet) out of Assets/Art/UI/Status/*.png
    into Assets/Art/UI/Icons/, plus a tight sad-hamster icon for the SCOLD button.
-3. Draws small pixel-art 9-slice frames (bar frame, bar fill, button tile, panel, speech bubble) in the
+3. Draws small pixel-art 9-slice frames (bar frame, bar fill, button tile, panel), and a
+   stretchable speech bubble made from the pack's chat_bubble.png, in the
    asset pack's palette into Assets/Art/UI/Generated/.
 
 Safe to run repeatedly. Usage:  python Tools/make_ui_sprites.py
@@ -159,13 +160,20 @@ def main():
     rounded_box((8, 6), WHITE, None, radius=2).save(os.path.join(gen, "bar_fill.png"))
     rounded_box((20, 20), CREAM, OUTLINE, radius=3, shadow=SHADOW).save(os.path.join(gen, "button_tile.png"))
     rounded_box((20, 20), CREAM, OUTLINE_SOFT, radius=4).save(os.path.join(gen, "panel.png"))
-    # Speech bubble: a 9-slice body plus a separate tail that points down at the pet.
-    rounded_box((20, 16), CREAM, OUTLINE, radius=4).save(os.path.join(gen, "bubble.png"))
-    tail = Image.new("RGBA", (9, 6), (0, 0, 0, 0))
-    ImageDraw.Draw(tail).polygon([(0, 0), (8, 0), (4, 5)], fill=CREAM, outline=OUTLINE)
-    for x in range(1, 8):  # open the top edge so the tail merges into the body
-        tail.putpixel((x, 0), CREAM)
-    tail.save(os.path.join(gen, "bubble_tail.png"))
+    # Speech bubble from the pack's own chat_bubble.png: paint out the hamster face and heart so
+    # the middle can stretch for any text (the face and heart are added back as separate images).
+    pack = Image.open(os.path.join(ROOT, "Dialogs", "chat_bubble.png")).convert("RGBA")
+    pack = pack.crop(pack.getbbox())
+    px = pack.load()
+    fill = px[pack.width // 2, 8]          # cream interior just below the top edge
+    for (x0, y0, x1, y1) in [(12, 9, 66, 60), (100, 14, 140, 52)]:
+        for y in range(y0, y1):
+            for x in range(x0, x1):
+                if px[x, y][3] > 0:
+                    px[x, y] = fill
+    pack.save(os.path.join(gen, "bubble_pack.png"))
+    print("bubble_pack.png", pack.size)
+
     print("generated frames in", gen)
 
 

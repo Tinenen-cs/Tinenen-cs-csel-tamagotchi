@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 080650336243afe49b290bc863620736
+guid: 469d20c3986bb3741944e775e619b195
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -9136834448258697486
-    second: bubble_0
+      213: 5312252606928196538
+    second: bubble_pack_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -52,7 +52,7 @@ TextureImporter:
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
-  spriteBorder: {x: 6, y: 6, z: 6, w: 6}
+  spriteBorder: {x: 44, y: 22, z: 14, w: 12}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
   alphaIsTransparency: 1
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: bubble_0
+      name: bubble_pack_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 20
-        height: 16
+        width: 158
+        height: 83
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 2f6fcf37a71733180800000000000000
-      internalID: -9136834448258697486
+      spriteID: ab31919b999e8b940800000000000000
+      internalID: 5312252606928196538
       vertices: []
       indices: 
       edges: []
