@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using Tamagotchi.UI;
-using Tamagotchi.World;
 using TMPro;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -45,10 +44,10 @@ public static class ScreenshotCapture
             SetPet("sleeping_02");
             Find<RectTransform>("Bed").gameObject.SetActive(true);
             var pet = Find<RectTransform>("Pet");
-            pet.anchoredPosition = new Vector2(0, 0.28f * 536f); // lifted onto the bed (PetController.sleepLift)
+            pet.anchoredPosition = new Vector2(0, 0.14f * 536f); // lifted onto the bed (PetController.sleepLift)
             SetBackground("moonlit_bedroom");
             Find<Image>("DimOverlay").color = new Color(0.05f, 0.05f, 0.2f, 0.45f);
-            SetBubble("Zzz...");
+            Find<RectTransform>("SpeechBubble").gameObject.SetActive(false); // hidden while asleep
             Find<StatBar>("EnergyBar").SetValue(35);
         });
         Render("Docs/state_hangry.png", () =>
@@ -97,7 +96,6 @@ public static class ScreenshotCapture
         var bg = Find<Image>("Background");
         bg.sprite = sprite;
         bg.GetComponent<AspectRatioFitter>().aspectRatio = sprite.rect.width / sprite.rect.height;
-        Find<SceneDecor>("PetArea").Show(sprite);
     }
 
     // ---------- rendering ----------
