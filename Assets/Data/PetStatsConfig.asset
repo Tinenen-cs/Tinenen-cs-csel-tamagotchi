@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69586531e63cd4a43a3c283911aa1404, type: 3}
+  m_Name: PetStatsConfig
+  m_EditorClassIdentifier: Tamagotchi::Tamagotchi.Pet.PetStatsConfig
+  timeScale: 1
+  startHunger: 80
+  startThirst: 80
+  startHappiness: 80
+  startEnergy: 80
+  startIntelligence: 10
+  startHealth: 100
+  hungerDecay: 6
+  thirstDecay: 7
+  happinessDecay: 4
+  energyDecay: 3
+  intelligenceDecay: 1
+  sleepEnergyPerSecond: 4
+  sleepDecayMultiplier: 0.5
+  healthDrainPerEmptyStat: 12
+  healthRegen: 3
+  wellFedLevel: 50
+  hangryThreshold: 25
+  lowThreshold: 25
+  starvingSecondsUntilSick: 30
+  feedHunger: 25
+  feedHappiness: 3
+  drinkThirst: 25
+  studyIntelligence: 12
+  studyEnergyCost: 10
+  studyHappinessCost: 5
+  playHappiness: 20
+  playEnergyCost: 8
+  playHungerCost: 3
+  playThirstCost: 3
