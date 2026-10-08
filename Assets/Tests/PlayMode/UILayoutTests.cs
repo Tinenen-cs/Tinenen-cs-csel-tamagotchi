@@ -25,7 +25,6 @@ namespace Tamagotchi.Tests
         public void AllStatBarsAreWired()
         {
             Assert.IsNotNull(_ui.HungerBar);
-            Assert.IsNotNull(_ui.ThirstBar);
             Assert.IsNotNull(_ui.HappinessBar);
             Assert.IsNotNull(_ui.EnergyBar);
             Assert.IsNotNull(_ui.IntelligenceBar);

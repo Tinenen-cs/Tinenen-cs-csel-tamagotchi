@@ -14,15 +14,14 @@ using UnityEngine.UI;
 ///   ┌──────────────────────────┐
 ///   │ Hammy               [♪]  │  header + mute
 ///   │ [🍴] HUNGER ███████ 100% │  big hunger bar (green → yellow → red)
-///   │ [💧]Thirst  [❤]Health    │  small bars, 2 columns
-///   │ [☺]Happy    [z]Energy    │
-///   │ [★]Smart                 │
+///   │ [❤]Health   [☺]Happy     │  small bars, 2 x 2
+///   │ [z]Energy   [★]Smart     │
 ///   ├──────────────────────────┤
 ///   │      ( speech bubble )   │  pet area: nothing overlaps it
 ///   │          \/              │
 ///   │        (hamster)         │
 ///   ├──────────────────────────┤
-///   │ FEED   DRINK   PLAY      │  3x2 thumb-sized action buttons
+///   │ FEED   SCOLD   PLAY      │  3x2 thumb-sized action buttons
 ///   │ STUDY  SLEEP   SCENE     │
 ///   └──────────────────────────┘
 ///
@@ -44,7 +43,6 @@ public static class MainSceneBuilder
     private static readonly Color Brown = new Color32(90, 48, 29, 255);
     private static readonly Color SoftBrown = new Color32(145, 87, 67, 255);
 
-    private static readonly Color ThirstColor = new Color32(82, 168, 240, 255);
     private static readonly Color HappinessColor = new Color32(250, 190, 70, 255);
     private static readonly Color EnergyColor = new Color32(150, 120, 220, 255);
     private static readonly Color IntelligenceColor = new Color32(70, 190, 165, 255);
@@ -77,7 +75,7 @@ public static class MainSceneBuilder
         safeArea = frame;
 
         // ---------- Top panel: header + stat bars ----------
-        var top = Rect("TopPanel", safeArea, new Vector2(0, 1), new Vector2(1, 1), new Vector2(30, -590), new Vector2(-30, -20));
+        var top = Rect("TopPanel", safeArea, new Vector2(0, 1), new Vector2(1, 1), new Vector2(30, -500), new Vector2(-30, -20));
         Sliced(top.gameObject, Sprite("UI/Generated/panel.png")).color = new Color(1f, 1f, 1f, 0.9f);
 
         var nameIcon = Rect("PetIcon", top, new Vector2(0, 1), new Vector2(0, 1), new Vector2(30, -125), new Vector2(130, -25));
@@ -92,7 +90,7 @@ public static class MainSceneBuilder
             new Vector2(0, 1), new Vector2(1, 1), new Vector2(20, -280), new Vector2(-20, -150), big: true);
         SetGradient(hunger, HungerGradient());
 
-        // Small bars: 2 columns x 3 rows.
+        // Small bars: 2 columns x 2 rows.
         StatBar Small(string name, string label, string icon, Color color, int col, int row)
         {
             float y0 = -295 - row * 90;
@@ -105,11 +103,10 @@ public static class MainSceneBuilder
             return bar;
         }
 
-        var thirst = Small("ThirstBar", "THIRST", "UI/Icons/icon_water.png", ThirstColor, 0, 0);
-        var health = Small("HealthBar", "HEALTH", "UI/Icons/icon_health.png", HealthColor, 1, 0);
-        var happiness = Small("HappinessBar", "HAPPY", "UI/Icons/icon_happiness.png", HappinessColor, 0, 1);
-        var energy = Small("EnergyBar", "ENERGY", "UI/Buttons/sleep_z.png", EnergyColor, 1, 1);
-        var intelligence = Small("IntelligenceBar", "SMART", "UI/Buttons/star.png", IntelligenceColor, 0, 2);
+        var health = Small("HealthBar", "HEALTH", "UI/Icons/icon_health.png", HealthColor, 0, 0);
+        var happiness = Small("HappinessBar", "HAPPY", "UI/Icons/icon_happiness.png", HappinessColor, 1, 0);
+        var energy = Small("EnergyBar", "ENERGY", "UI/Buttons/sleep_z.png", EnergyColor, 0, 1);
+        var intelligence = Small("IntelligenceBar", "SMART", "UI/Buttons/star.png", IntelligenceColor, 1, 1);
 
         // ---------- Bottom panel: action buttons (2 rows x 3) ----------
         var bottom = Rect("ActionBar", safeArea, Vector2.zero, new Vector2(1, 0), new Vector2(30, 20), new Vector2(-30, 440));
@@ -121,7 +118,7 @@ public static class MainSceneBuilder
         grid.childAlignment = TextAnchor.MiddleCenter;
 
         var feed = ActionButton(bottom, "FeedButton", "FEED", Sprite("UI/Icons/icon_hunger.png"));
-        var drink = ActionButton(bottom, "DrinkButton", "DRINK", Sprite("UI/Icons/icon_water.png"));
+        var scold = ActionButton(bottom, "ScoldButton", "SCOLD", Sprite("UI/Icons/icon_sad.png"));
         var play = ActionButton(bottom, "PlayButton", "PLAY", Sprite("UI/Buttons/heart.png"));
         var study = ActionButton(bottom, "StudyButton", "STUDY", Sprite("UI/Buttons/star.png"));
         var sleep = ActionButton(bottom, "SleepButton", "SLEEP", Sprite("UI/Buttons/sleep_z.png"));
@@ -155,7 +152,7 @@ public static class MainSceneBuilder
 
         // ---------- Middle: free space between the panels for the pet ----------
         // Nothing overlaps this area, so the pet is never covered by UI.
-        var petArea = Rect("PetArea", safeArea, Vector2.zero, Vector2.one, new Vector2(30, 460), new Vector2(-30, -610));
+        var petArea = Rect("PetArea", safeArea, Vector2.zero, Vector2.one, new Vector2(30, 460), new Vector2(-30, -520));
 
         // Pet stands near the bottom of the area; its size follows the area height.
         var pet = Rect("Pet", petArea, new Vector2(0.5f, 0.03f), new Vector2(0.5f, 0.6f), Vector2.zero, Vector2.zero);
@@ -194,13 +191,12 @@ public static class MainSceneBuilder
         // ---------- UIManager wiring ----------
         var ui = canvas.AddComponent<UIManager>();
         Set(ui, "hungerBar", hunger);
-        Set(ui, "thirstBar", thirst);
         Set(ui, "happinessBar", happiness);
         Set(ui, "energyBar", energy);
         Set(ui, "intelligenceBar", intelligence);
         Set(ui, "healthBar", health);
         Set(ui, "feedButton", feed);
-        Set(ui, "drinkButton", drink);
+        Set(ui, "scoldButton", scold);
         Set(ui, "studyButton", study);
         Set(ui, "sleepButton", sleep);
         Set(ui, "playButton", play);
@@ -249,7 +245,6 @@ public static class MainSceneBuilder
             // state, frames (hamster sprite name), frames per second
             (PetState.Idle, "idle", 4f),
             (PetState.Eating, "eating", 8f),
-            (PetState.Drinking, "eating", 8f),   // no drinking frames in the pack; sipping uses the eating loop
             (PetState.Studying, "studying", 5f),
             (PetState.Sleeping, "sleeping", 3f),
             (PetState.Playing, "playing", 8f),

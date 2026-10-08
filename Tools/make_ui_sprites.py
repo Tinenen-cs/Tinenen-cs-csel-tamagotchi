@@ -5,7 +5,7 @@ Prepares UI sprites for the game (requires Python 3 + Pillow: pip install pillow
    contain thin slivers of neighbouring sprites along their edges, which are trimmed off.
    Sprites that are clipped in the pack (the star) are re-cut from the pack's source sheet.
 2. Cuts the round icons (smiley, heart, fork, droplet) out of Assets/Art/UI/Status/*.png
-   into Assets/Art/UI/Icons/.
+   into Assets/Art/UI/Icons/, plus a tight sad-hamster icon for the SCOLD button.
 3. Draws small pixel-art 9-slice frames (bar frame, bar fill, button tile, panel, speech bubble) in the
    asset pack's palette into Assets/Art/UI/Generated/.
 
@@ -147,6 +147,11 @@ def main():
     for name in ["hunger", "water", "health", "happiness"]:
         cut_status_icon(os.path.join(ROOT, "Status", f"{name}.png"),
                         os.path.join(icon_dir, f"icon_{name}.png"))
+
+    # SCOLD button icon: the sad hamster frame cropped tight (the frame has wide empty margins).
+    sad = Image.open(os.path.join(ROOT, "..", "Pet", "Hamster", "sad_01.png")).convert("RGBA")
+    sad.crop(sad.getbbox()).save(os.path.join(icon_dir, "icon_sad.png"))
+    print("icon icon_sad.png")
 
     gen = os.path.join(ROOT, "Generated")
     os.makedirs(gen, exist_ok=True)

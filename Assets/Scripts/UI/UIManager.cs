@@ -6,7 +6,7 @@ using UnityEngine.UI;
 namespace Tamagotchi.UI
 {
     /// <summary>Actions the player can trigger from the bottom button bar.</summary>
-    public enum PetAction { Feed, Drink, Study, Sleep, Play }
+    public enum PetAction { Feed, Scold, Study, Sleep, Play }
 
     /// <summary>
     /// Owns all on-screen UI: stat bars, action buttons, mute button and the speech bubble.
@@ -17,7 +17,6 @@ namespace Tamagotchi.UI
     {
         [Header("Stat bars")]
         [SerializeField] private StatBar hungerBar;
-        [SerializeField] private StatBar thirstBar;
         [SerializeField] private StatBar happinessBar;
         [SerializeField] private StatBar energyBar;
         [SerializeField] private StatBar intelligenceBar;
@@ -25,7 +24,7 @@ namespace Tamagotchi.UI
 
         [Header("Action buttons")]
         [SerializeField] private Button feedButton;
-        [SerializeField] private Button drinkButton;
+        [SerializeField] private Button scoldButton;
         [SerializeField] private Button studyButton;
         [SerializeField] private Button sleepButton;
         [SerializeField] private Button playButton;
@@ -55,7 +54,6 @@ namespace Tamagotchi.UI
         public event Action AnyButtonPressed;
 
         public StatBar HungerBar => hungerBar;
-        public StatBar ThirstBar => thirstBar;
         public StatBar HappinessBar => happinessBar;
         public StatBar EnergyBar => energyBar;
         public StatBar IntelligenceBar => intelligenceBar;
@@ -65,7 +63,7 @@ namespace Tamagotchi.UI
         private void Awake()
         {
             Hook(feedButton, () => ActionPressed?.Invoke(PetAction.Feed));
-            Hook(drinkButton, () => ActionPressed?.Invoke(PetAction.Drink));
+            Hook(scoldButton, () => ActionPressed?.Invoke(PetAction.Scold));
             Hook(studyButton, () => ActionPressed?.Invoke(PetAction.Study));
             Hook(sleepButton, () => ActionPressed?.Invoke(PetAction.Sleep));
             Hook(playButton, () => ActionPressed?.Invoke(PetAction.Play));
@@ -88,7 +86,7 @@ namespace Tamagotchi.UI
         public Button GetButton(PetAction action) => action switch
         {
             PetAction.Feed => feedButton,
-            PetAction.Drink => drinkButton,
+            PetAction.Scold => scoldButton,
             PetAction.Study => studyButton,
             PetAction.Sleep => sleepButton,
             _ => playButton,
