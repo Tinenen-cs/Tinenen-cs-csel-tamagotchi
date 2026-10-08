@@ -25,6 +25,7 @@ public static class ProjectSetup
     public static void SetupAll()
     {
         ApplyPlayerSettings();
+        AssetDatabase.Refresh();
         AssetDatabase.ImportAsset("Assets/Art", ImportAssetOptions.ImportRecursive);
         BuildMainScene();
         Debug.Log("[ProjectSetup] Done.");
@@ -56,7 +57,7 @@ public static class ProjectSetup
         AssetDatabase.SaveAssets();
     }
 
-    /// <summary>Creates Main.unity from scratch: camera, event system, scaled canvas, safe-area root.</summary>
+    /// <summary>Creates Main.unity from scratch: camera, event system, scaled canvas, safe-area root and all UI.</summary>
     public static void BuildMainScene()
     {
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -89,6 +90,9 @@ public static class ProjectSetup
         var safe = CreateRect("SafeArea", canvasGo.transform);
         Stretch(safe);
         safe.gameObject.AddComponent<SafeArea>();
+
+        // Stat bars, pet area and action buttons.
+        MainSceneBuilder.Build(canvasGo, safe);
 
         EditorSceneManager.SaveScene(scene, MainScenePath);
         EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(MainScenePath, true) };
