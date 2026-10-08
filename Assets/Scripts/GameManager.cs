@@ -5,13 +5,14 @@ using UnityEngine;
 namespace Tamagotchi
 {
     /// <summary>
-    /// Connects the systems: UI buttons -> pet stats, and pet stats -> UI.
+    /// Connects the systems: UI buttons -> pet stats + pet reactions, and pet stats -> UI.
     /// Each system only knows its own job; this is the one place that wires them together.
     /// </summary>
     public class GameManager : MonoBehaviour
     {
         [SerializeField] private PetStats stats;
         [SerializeField] private UIManager ui;
+        [SerializeField] private PetController pet;
         [Tooltip("Name used in the mood messages.")]
         [SerializeField] private string petName = "Hammy";
 
@@ -59,30 +60,30 @@ namespace Tamagotchi
 
         private void OnActionPressed(PetAction action)
         {
+            bool ok = true;
             switch (action)
             {
                 case PetAction.Feed:
-                    stats.Feed();
+                    ok = stats.Feed();
                     Say("Yum yum!");
                     break;
                 case PetAction.Drink:
-                    stats.Drink();
+                    ok = stats.Drink();
                     Say("Gulp gulp!");
                     break;
                 case PetAction.Study:
-                    Say(stats.Study()
-                        ? "Studying hard!"
-                        : "Too tired to study...");
+                    ok = stats.Study();
+                    Say(ok ? "Studying hard!" : "Too tired to study...");
                     break;
                 case PetAction.Play:
-                    Say(stats.Play()
-                        ? "Wheee! Fun!"
-                        : "Too tired to play...");
+                    ok = stats.Play();
+                    Say(ok ? "Wheee! Fun!" : "Too tired to play...");
                     break;
                 case PetAction.Sleep:
                     stats.SetSleeping(!stats.IsSleeping);
                     break;
             }
+            pet.React(action, ok); // animation / emote for this action
         }
 
         private void OnRestartPressed()

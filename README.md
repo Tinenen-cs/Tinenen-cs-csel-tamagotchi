@@ -7,7 +7,10 @@ and it gets **sick**.
 
 <p align="center"><img src="Docs/screenshot.png" alt="Game screen" width="320"></p>
 
-> Screenshot generated with **Tamagotchi → Capture Screenshot**. A GIF of the gameplay will be added later.
+<p align="center"><img src="Docs/states_overview.png" alt="Sleeping, hangry, playing and sick states" width="720"></p>
+
+> Screenshots generated with **Tamagotchi → Capture Screenshot** / **Capture State Screenshots**
+> (states left to right: sleeping, hangry, playing at the beach, sick). A GIF of the gameplay will be added later.
 
 ## Status
 
@@ -16,7 +19,7 @@ and it gets **sick**.
 | 1 | Project setup (portrait, Canvas Scaler, safe area, art import) | ✅ Done |
 | 2 | UI layout (stat bars, pet area, action buttons, Scene button, mute) | ✅ Done |
 | 3 | Stats, hunger bar, hangry state, sick / game over + Restart | ✅ Done |
-| 4 | Pet state machine and emotes (idle, eating, studying, sleeping, playing, happy, sad, crying, hangry, sick) | ⏳ Planned |
+| 4 | Pet state machine and emotes (idle, eating, drinking, studying, sleeping, playing, happy, sad, crying, hangry, sick) | ✅ Done |
 | 5 | Audio (AudioManager, CC0 sounds, mute) | ⏳ Planned |
 | 6 | Save/load with offline decay | ⏳ Planned |
 | 7 | Polish | ⏳ Planned |
@@ -38,8 +41,24 @@ and it gets **sick**.
   buttons at the bottom, leaving the middle clear so nothing covers the pet.
 - **Speech bubble** above the pet's head reacts to every action ("Yum yum!", "Too tired to study...").
   Messages fade after a few seconds; warnings like **"I'm HANGRY! Feed me!"** stay until fixed.
-- *Planned:* animated emotes for every state, a sound for every action and emote, a mute toggle,
-  save/load, and Sleep switching to the moonlit bedroom with the scene dimmed.
+- **Animated pet with a state machine** (`PetController`). It reacts visibly to every button and to its stats:
+
+  | State | When | Animation and effect |
+  |-------|------|-------------|
+  | Idle | Nothing special going on | `idle` frames, slow loop |
+  | Eating | FEED (2 s) | `eating` frames + little hops |
+  | Drinking | DRINK (2 s) | `eating` frames (the pack has no drinking frames) + little hops |
+  | Studying | STUDY (2 s) | `studying` frames |
+  | Playing → Happy | PLAY (2 s, then 1.2 s happy) | `playing` then `happy` frames + bouncing |
+  | Sad | Happiness below 25%, or the pet refuses (too tired) | `sad` frames |
+  | Crying | Health below 25% | `crying` frames |
+  | Hangry | Hunger below 25% | `sad` frames + red pulse + angry shake |
+  | Sleeping | SLEEP | `sleeping` frames; the screen dims and switches to the moonlit bedroom |
+  | Sick | Health 0 / starving too long | `crying` frames + green tint; game-over card (animated) |
+
+  Priority when several apply: Sick > Sleeping > Hangry > Crying > Sad > Idle. Button reactions play on
+  top for a moment, except while sick or asleep.
+- *Planned:* a sound for every action and emote, a mute toggle, and save/load.
 
 ## Controls
 
@@ -98,10 +117,12 @@ Assets/
     World/BackgroundSwitcher.cs  full-screen background: Scene button cycling + temporary override (used by Sleep)
     Pet/PetStats.cs        the six stats: decay, actions, sleep, health, hangry, sick
     Pet/PetStatsConfig.cs  ScriptableObject with all tuning numbers
-    GameManager.cs         wires buttons -> stats and stats -> UI (bars, hangry, game over)
+    Pet/PetController.cs   state machine: Idle, Eating, Drinking, Studying, Sleeping, Playing, Happy, Sad, Crying, Hangry, Sick
+    Pet/SpriteAnimator.cs  flip-book animation of sprite frames on a UI Image
+    GameManager.cs         wires buttons -> stats + pet reactions, and stats -> UI (bars, hangry, game over)
   Data/PetStatsConfig.asset  the tuning values used by the game
   TextMesh Pro/       TextMesh Pro essential resources
-  Tests/PlayMode/     smoke test, UI layout, stat rules and game-flow tests
+  Tests/PlayMode/     smoke test, UI layout, stat rules, game-flow and pet state machine tests
 Docs/                 screenshots
 Tools/
   verify.sh           batch-mode check: compile, regenerate scene, run tests
@@ -171,7 +192,9 @@ will be listed here with its source and license._
 8. Press **▶ Play** (top center).
 9. Try it:
    - **FEED / DRINK / PLAY / STUDY:** the bars change and the speech bubble above the hamster reacts.
-   - **SLEEP:** the Energy bar refills; tap again to wake up.
+   - **SLEEP:** the hamster sleeps, the screen dims and turns to the moonlit bedroom while Energy refills;
+     tap again to wake up.
+   - **PLAY:** the hamster plays and bounces, then looks happy.
    - **SCENE:** the background changes.
    - To see **hangry** and **sick** quickly, use demo mode (see *Tuning the stats*).
 10. Keep the **Console** tab open (Window → General → Console). It should show no red errors.

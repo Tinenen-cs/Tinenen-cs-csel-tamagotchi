@@ -132,7 +132,8 @@ public static class MainSceneBuilder
         bgFit.aspectRatio = 493f / 391f;
 
         var dim = Rect("DimOverlay", bgLayer, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
-        Img(dim.gameObject, null).color = new Color(0.05f, 0.05f, 0.2f, 0f);
+        var dimImage = Img(dim.gameObject, null);
+        dimImage.color = new Color(0.05f, 0.05f, 0.2f, 0f);
 
         var switcher = bgLayer.gameObject.AddComponent<BackgroundSwitcher>();
         Set(switcher, "target", bgImage);
@@ -153,7 +154,8 @@ public static class MainSceneBuilder
 
         // Pet stands near the bottom of the area; its size follows the area height.
         var pet = Rect("Pet", petArea, new Vector2(0.5f, 0.03f), new Vector2(0.5f, 0.6f), Vector2.zero, Vector2.zero);
-        Img(pet.gameObject, Sprite("Pet/Hamster/idle_01.png"), preserveAspect: true);
+        var petImage = Img(pet.gameObject, Sprite("Pet/Hamster/idle_01.png"), preserveAspect: true);
+        var petAnimator = pet.gameObject.AddComponent<SpriteAnimator>();
         var petFit = pet.gameObject.AddComponent<AspectRatioFitter>();
         petFit.aspectMode = AspectRatioFitter.AspectMode.HeightControlsWidth;
         petFit.aspectRatio = 208f / 187f;
@@ -213,6 +215,8 @@ public static class MainSceneBuilder
         Sliced(card.gameObject, Sprite("UI/Generated/panel.png"));
         var sickPet = Rect("SickPet", card, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(-220, -470), new Vector2(220, -70));
         Img(sickPet.gameObject, Sprite("Pet/Hamster/crying_01.png"), preserveAspect: true);
+        var sickAnimator = sickPet.gameObject.AddComponent<SpriteAnimator>();
+        SetFrames(sickAnimator, Frames("crying"), 5f);
         var title = Text(card, "Title", PetName + " got sick!", 96, Brown, TextAlignmentOptions.Center);
         Place(title.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(30, -590), new Vector2(-30, -480));
         var sub = Text(card, "Subtitle", "Keep the hunger bar up next time.", 52, SoftBrown, TextAlignmentOptions.Center);
@@ -228,9 +232,73 @@ public static class MainSceneBuilder
         var game = new GameObject("Game");
         var stats = game.AddComponent<PetStats>();
         Set(stats, "config", EnsureStatsConfig());
+        var controller = game.AddComponent<PetController>();
+        Set(controller, "stats", stats);
+        Set(controller, "animator", petAnimator);
+        Set(controller, "petImage", petImage);
+        Set(controller, "backgrounds", switcher);
+        Set(controller, "sleepBackground", Sprite("Backgrounds/moonlit_bedroom.png"));
+        Set(controller, "dimOverlay", dimImage);
+        SetAnimations(controller, new[]
+        {
+            // state, frames (hamster sprite name), frames per second
+            (PetState.Idle, "idle", 4f),
+            (PetState.Eating, "eating", 8f),
+            (PetState.Drinking, "eating", 8f),   // no drinking frames in the pack; sipping uses the eating loop
+            (PetState.Studying, "studying", 5f),
+            (PetState.Sleeping, "sleeping", 3f),
+            (PetState.Playing, "playing", 8f),
+            (PetState.Happy, "happy", 8f),
+            (PetState.Sad, "sad", 4f),
+            (PetState.Crying, "crying", 6f),
+            (PetState.Hangry, "sad", 7f),        // + red pulse and shake (PetController)
+            (PetState.Sick, "crying", 4f),       // + green tint (PetController)
+        });
+
         var manager = game.AddComponent<GameManager>();
         Set(manager, "stats", stats);
         Set(manager, "ui", ui);
+        Set(manager, "pet", controller);
+    }
+
+    /// <summary>All hamster frames for an animation name, e.g. "idle" -> idle_01..idle_04.</summary>
+    private static Sprite[] Frames(string name)
+    {
+        var list = new System.Collections.Generic.List<Sprite>();
+        for (int i = 1; i <= 9; i++)
+        {
+            var s = AssetDatabase.LoadAssetAtPath<Sprite>($"{Art}Pet/Hamster/{name}_{i:00}.png");
+            if (s == null) break;
+            list.Add(s);
+        }
+        if (list.Count == 0) Debug.LogError("[MainSceneBuilder] No frames found for " + name);
+        return list.ToArray();
+    }
+
+    private static void SetFrames(SpriteAnimator animator, Sprite[] frames, float fps)
+    {
+        SetArray(animator, "frames", frames);
+        var so = new SerializedObject(animator);
+        so.FindProperty("fps").floatValue = fps;
+        so.ApplyModifiedPropertiesWithoutUndo();
+    }
+
+    private static void SetAnimations(PetController controller, (PetState state, string frames, float fps)[] entries)
+    {
+        var so = new SerializedObject(controller);
+        var list = so.FindProperty("animations");
+        list.arraySize = entries.Length;
+        for (int i = 0; i < entries.Length; i++)
+        {
+            var e = list.GetArrayElementAtIndex(i);
+            e.FindPropertyRelative("state").enumValueIndex = (int)entries[i].state;
+            e.FindPropertyRelative("fps").floatValue = entries[i].fps;
+            var frames = Frames(entries[i].frames);
+            var fp = e.FindPropertyRelative("frames");
+            fp.arraySize = frames.Length;
+            for (int f = 0; f < frames.Length; f++) fp.GetArrayElementAtIndex(f).objectReferenceValue = frames[f];
+        }
+        so.ApplyModifiedPropertiesWithoutUndo();
     }
 
     /// <summary>Creates the stats tuning asset with default values (once; your edits are kept).</summary>
