@@ -51,7 +51,7 @@ namespace Tamagotchi.Pet
         [Tooltip("Bed the pet lies on while sleeping (shown only then).")]
         [SerializeField] private GameObject bedProp;
         [Tooltip("How far the pet is lifted onto the bed, as a fraction of its height.")]
-        [SerializeField] private float sleepLift = 0.28f;
+        [SerializeField] private float sleepLift = 0.14f;
 
         [Header("Eating")]
         [Tooltip("Food bowl shown beside the pet while it eats.")]

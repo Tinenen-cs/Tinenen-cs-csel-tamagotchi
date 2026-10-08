@@ -115,6 +115,12 @@ namespace Tamagotchi.UI
 
         public SpeechBubble SpeechBubble => speechBubble;
 
+        /// <summary>Hides the speech bubble.</summary>
+        public void HideMood()
+        {
+            if (speechBubble != null) speechBubble.Hide();
+        }
+
         /// <summary>Hangry warning: the hunger bar flashes red and pulses.</summary>
         public void SetHangry(bool hangry) => hungerBar.SetAlarm(hangry);
 

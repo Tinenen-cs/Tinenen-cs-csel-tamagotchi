@@ -39,11 +39,11 @@ and it gets **sick**.
 - **Full-screen scenes:** the background fills the whole screen behind the UI. The **Scene** button
   cycles through 6 pixel-art backgrounds (default: cozy home). The stats sit at the top and the
   buttons at the bottom, leaving the middle clear so nothing covers the pet.
-- **Props from the asset pack:** the food bowl appears while eating, the pet sleeps in the soft bed, and
-  every scene has matching props beside the pet (hamster house + water bottle at home, sign + fence in
-  the garden, palm tree + umbrella at the beach, tree stump + rocks by the stream, plants on the rooftop).
+- **Props from the asset pack where they mean something:** the food bowl appears while eating and the pet
+  sleeps in the soft bed. Scenes stay clean (no extra decoration over the painted backgrounds).
 - **Speech bubble** in the asset pack's style (hamster face, text, heart) above the pet reacts to every action ("Yum yum!", "Too tired to study...").
   Messages fade after a few seconds; warnings like **"I'm HANGRY! Feed me!"** stay until fixed.
+  While the pet sleeps the bubble is hidden (the sleeping animation draws its own "Zzz").
 - **Animated pet with a state machine** (`PetController`). It reacts visibly to every button and to its stats:
 
   | State | When | Animation and effect |
@@ -107,7 +107,7 @@ Assets/
   Art/
     Pet/Hamster/      hamster animation frames (idle, eating, studying, sleeping, happy, playing, sad, crying)
     Backgrounds/      6 full scenes (cozy_home, moonlit_bedroom, sunny_garden, beach, forest_stream, sunset_rooftop)
-    Props/            decorative props (Home, Garden, Beach, Forest)
+    Props/            props from the pack (the food bowl and soft bed are used in game)
     UI/               Buttons/, Dialogs/, Status/ sprites from the pack
       Icons/          round stat icons cut from the Status bars (by Tools/make_ui_sprites.py)
       Generated/      9-slice bar/button/panel frames drawn in the pack's palette
@@ -126,7 +126,6 @@ Assets/
     UI/SpeechBubble.cs  pop-in speech bubble above the pet (normal or sticky messages)
     UI/SafeArea.cs    keeps UI clear of notches and cut-outs
     UI/PortraitFrame.cs keeps the UI a centered 9:16 column in wide windows
-    World/SceneDecor.cs  props beside the pet that match the current background
     World/BackgroundSwitcher.cs  full-screen background: Scene button cycling + temporary override (used by Sleep)
     Pet/PetStats.cs        the five stats: decay, actions, sleep, health, hangry, sick
     Pet/PetStatsConfig.cs  ScriptableObject with all tuning numbers

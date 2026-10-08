@@ -115,7 +115,9 @@ namespace Tamagotchi
 
         private void OnSleepChanged(bool sleeping)
         {
-            ui.ShowMood(sleeping ? "Zzz..." : "I'm awake!", sticky: sleeping);
+            // The sleeping frames draw their own "Zzz", so the bubble steps aside while asleep.
+            if (sleeping) ui.HideMood();
+            else ui.ShowMood("I'm awake!");
         }
 
         private void OnBecameSick()
