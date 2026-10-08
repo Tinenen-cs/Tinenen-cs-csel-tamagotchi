@@ -33,8 +33,11 @@ and it gets **sick**.
   sick. A game-over card with the crying hamster and a **Restart** button appears.
 - **Sleep** restores Energy over time (4 per second) and slows the other stats. The pet wakes up by
   itself when Energy is full, or when you tap Sleep again or do anything else.
-- **Scene button:** cycles through 6 pixel-art backgrounds (default: cozy home).
-- **Mood line** under the scene describes what the pet is doing.
+- **Full-screen scenes:** the background fills the whole screen behind the UI. The **Scene** button
+  cycles through 6 pixel-art backgrounds (default: cozy home). The stats sit at the top and the
+  buttons at the bottom, leaving the middle clear so nothing covers the pet.
+- **Speech bubble** above the pet's head reacts to every action ("Yum yum!", "Too tired to study...").
+  Messages fade after a few seconds; warnings like **"I'm HANGRY! Feed me!"** stay until fixed.
 - *Planned:* animated emotes for every state, a sound for every action and emote, a mute toggle,
   save/load, and Sleep switching to the moonlit bedroom with the scene dimmed.
 
@@ -90,8 +93,9 @@ Assets/
     UI/UIManager.cs   owns all UI: stat bars, buttons, mood text; raises ActionPressed / MutePressed
     UI/StatBar.cs     one 0-100 meter (fixed color or gradient)
     UI/PressBounce.cs squash-and-spring feedback on button press
+    UI/SpeechBubble.cs  pop-in speech bubble above the pet (normal or sticky messages)
     UI/SafeArea.cs    keeps UI clear of notches and cut-outs
-    World/BackgroundSwitcher.cs  Scene button cycling + temporary override (used by Sleep)
+    World/BackgroundSwitcher.cs  full-screen background: Scene button cycling + temporary override (used by Sleep)
     Pet/PetStats.cs        the six stats: decay, actions, sleep, health, hangry, sick
     Pet/PetStatsConfig.cs  ScriptableObject with all tuning numbers
     GameManager.cs         wires buttons -> stats and stats -> UI (bars, hangry, game over)
@@ -114,7 +118,8 @@ will be listed here with its source and license._
 | Asset | Source | License |
 |-------|--------|---------|
 | Hamster sprites, backgrounds, props, UI sprites | Supplied by the project owner (tamagotchi asset pack) | Project owner's own assets |
-| `Assets/Art/UI/Icons/*`, `Assets/Art/UI/Generated/*` | Derived from / drawn to match the pack by `Tools/make_ui_sprites.py` | Same as above |
+| `Assets/Art/UI/Icons/*`, `Assets/Art/UI/Generated/*` (incl. speech bubble) | Derived from / drawn to match the pack by `Tools/make_ui_sprites.py` | Same as above |
+| `Assets/Art/UI/Buttons/star.png` | Re-cut from the pack's `Source/complete_generated_asset_sheet.png` (the pack's own `star.png` is clipped) | Same as above |
 | `Assets/Art/Fonts/KenneyPixel.ttf` | [Kenney Fonts](https://kenney.nl/assets/kenney-fonts) by Kenney | CC0 1.0 (`KenneyFonts-License.txt`) |
 | `Assets/TextMesh Pro/*` (LiberationSans etc.) | Unity TextMesh Pro essential resources | Unity Companion License / SIL OFL (LiberationSans) |
 
@@ -165,7 +170,7 @@ will be listed here with its source and license._
    **Scale** slider if it's too big.
 8. Press **▶ Play** (top center).
 9. Try it:
-   - **FEED / DRINK / PLAY / STUDY:** the bars change and the mood line updates.
+   - **FEED / DRINK / PLAY / STUDY:** the bars change and the speech bubble above the hamster reacts.
    - **SLEEP:** the Energy bar refills; tap again to wake up.
    - **SCENE:** the background changes.
    - To see **hangry** and **sick** quickly, use demo mode (see *Tuning the stats*).
