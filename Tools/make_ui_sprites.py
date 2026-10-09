@@ -160,6 +160,18 @@ def main():
     rounded_box((8, 6), WHITE, None, radius=2).save(os.path.join(gen, "bar_fill.png"))
     rounded_box((20, 20), CREAM, OUTLINE, radius=3, shadow=SHADOW).save(os.path.join(gen, "button_tile.png"))
     rounded_box((20, 20), CREAM, OUTLINE_SOFT, radius=4).save(os.path.join(gen, "panel.png"))
+    # App icon: the hamster face on a cream tile, 512x512, pixels kept crisp.
+    face = Image.open(os.path.join(ROOT, "Buttons", "hamster_face.png")).convert("RGBA")
+    icon = rounded_box((64, 64), CREAM, OUTLINE, radius=10).resize((512, 512), Image.NEAREST)
+    face = face.crop(face.getbbox())
+    k = 340 // max(face.size)
+    face = face.resize((face.width * k, face.height * k), Image.NEAREST)
+    icon.alpha_composite(face, ((512 - face.width) // 2, (512 - face.height) // 2 + 8))
+    icon_dir2 = os.path.join(ROOT, "..", "Icon")
+    os.makedirs(icon_dir2, exist_ok=True)
+    icon.save(os.path.join(icon_dir2, "app_icon.png"))
+    print("app_icon.png")
+
     # Speech bubble from the pack's own chat_bubble.png: paint out the hamster face and heart so
     # the middle can stretch for any text (the face and heart are added back as separate images).
     pack = Image.open(os.path.join(ROOT, "Dialogs", "chat_bubble.png")).convert("RGBA")

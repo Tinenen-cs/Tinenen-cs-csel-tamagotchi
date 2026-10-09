@@ -27,6 +27,7 @@ public static class ProjectSetup
         ApplyPlayerSettings();
         AssetDatabase.Refresh();
         AssetDatabase.ImportAsset("Assets/Art", ImportAssetOptions.ImportRecursive);
+        ApplyAppIcon();
         BuildMainScene();
         Debug.Log("[ProjectSetup] Done.");
     }
@@ -37,6 +38,15 @@ public static class ProjectSetup
     {
         Tamagotchi.SaveSystem.ClearSave();
         Debug.Log("[ProjectSetup] Save data cleared. The next Play starts a new pet.");
+    }
+
+    /// <summary>Uses Assets/Art/Icon/app_icon.png (hamster face) as the app icon on every platform.</summary>
+    public static void ApplyAppIcon()
+    {
+        var icon = AssetDatabase.LoadAssetAtPath<Texture2D>("Assets/Art/Icon/app_icon.png");
+        if (icon == null) { Debug.LogWarning("[ProjectSetup] App icon not found; run Tools/make_ui_sprites.py"); return; }
+        PlayerSettings.SetIcons(NamedBuildTarget.Unknown, new[] { icon }, IconKind.Any);
+        AssetDatabase.SaveAssets();
     }
 
     /// <summary>Locks the app to portrait and sets names / bundle IDs for every platform.</summary>
