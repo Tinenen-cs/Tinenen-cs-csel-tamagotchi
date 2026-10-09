@@ -21,7 +21,7 @@ and it gets **sick**.
 | 3 | Stats, hunger bar, hangry state, sick / game over + Restart | ✅ Done |
 | 4 | Pet state machine and emotes (idle, eating, studying, sleeping, playing, happy, sad, crying, hangry, sick) | ✅ Done |
 | 5 | Audio (AudioManager, CC0 sounds, music, mute) | ✅ Done |
-| 6 | Save/load with offline decay | ⏳ Planned |
+| 6 | Save/load with offline decay | ✅ Done |
 | 7 | Polish | ⏳ Planned |
 | 8 | WebGL (GitHub Pages) and mobile builds | ⏳ Planned |
 
@@ -63,7 +63,10 @@ and it gets **sick**.
 - **Audio for everything:** a click for every button, a unique sound for each button's action and for
   every emote (eat, study, sleep, play, happy, sad, cry, hangry, sick, game over), a repeating warning
   while hangry, and a looping background tune. The ♪ button mutes everything and is remembered.
-- *Planned:* save/load with offline decay.
+- **Save/load:** the pet (all stats, asleep or not, the chosen scene) is saved automatically every
+  5 seconds, when the app is minimised, and when it quits. Time away counts at a slower "offline"
+  speed (default 5%: one hour away = 3 minutes of decay, capped at 72 hours), so the pet is hungrier
+  when you come back, and it greets you with "I missed you! (2h 5m)". The mute setting is saved too.
 
 ## Controls
 
@@ -87,6 +90,8 @@ and it gets **sick**.
    regenerated.
 4. **Demo mode:** set **Time Scale** to `10` (or `30`) to watch the hunger bar drain, go hangry and get
    sick in about a minute. Set it back to `1` for normal play.
+5. **Offline Decay Multiplier** (default `0.05`) sets how fast stats change while the game is closed;
+   **Max Offline Hours** caps long absences. Time Scale does not affect offline time.
 
 ## Screen layout
 
@@ -138,6 +143,7 @@ Assets/
     Audio/Sound.cs         one named sound (clip, volume, pitch, random variation) - from the original Sound class
     Audio/PetAudio.cs      which sound plays when (buttons, emotes, hangry repeat, game over)
     GameManager.cs         wires buttons -> stats + pet reactions, and stats -> UI (bars, hangry, game over)
+    SaveSystem.cs          PlayerPrefs save/load + offline time; autosave every 5 s, on pause and on quit
   Data/PetStatsConfig.asset  the tuning values used by the game
   TextMesh Pro/       TextMesh Pro essential resources
   Tests/PlayMode/     smoke test, UI layout, stat rules, game-flow and pet state machine tests
@@ -242,6 +248,8 @@ edit the list in `Assets/Editor/MainSceneBuilder.cs` (`SetSounds`) instead.
    - **PLAY:** the hamster plays and bounces, then looks happy.
    - **SCENE:** the background changes.
    - To see **hangry** and **sick** quickly, use demo mode (see *Tuning the stats*).
+   - **Save/load:** stop and press Play again; the pet continues where it was (minus a little offline
+     decay). Use **Tamagotchi → Clear Save Data** to start over.
 10. Keep the **Console** tab open (Window → General → Console). It should show no red errors.
 11. Press **▶** again to stop. Changes made while playing are discarded.
 12. **Run the automated tests (optional):** **Window → General → Test Runner → PlayMode → Run All**.
@@ -259,6 +267,9 @@ edit the list in `Assets/Editor/MainSceneBuilder.cs` (`SetSounds`) instead.
   <https://tinenen-cs.github.io/Tinenen-cs-csel-tamagotchi/>.
 
 ## Troubleshooting
+
+- **The pet doesn't start fresh when I press Play:** the game continues your saved pet (that's the
+  save system). For a brand-new pet use **Tamagotchi → Clear Save Data**, or press **RESTART** after it gets sick.
 
 - **The UI looks squashed or the buttons overlap the room (Scene/Game view):** the Game view is on
   *Free Aspect* (a wide shape). Pick **Phone (1080×1920)** in the Game view's resolution dropdown (see

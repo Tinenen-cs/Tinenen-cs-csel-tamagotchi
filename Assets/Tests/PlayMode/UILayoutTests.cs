@@ -15,6 +15,7 @@ namespace Tamagotchi.Tests
         [UnitySetUp]
         public IEnumerator LoadMain()
         {
+            TestSave.Isolate();
             yield return SceneManager.LoadSceneAsync("Main");
             yield return null; // let Start() run
             _ui = Object.FindAnyObjectByType<UIManager>();

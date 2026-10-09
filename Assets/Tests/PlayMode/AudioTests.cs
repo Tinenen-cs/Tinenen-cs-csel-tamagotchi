@@ -24,6 +24,7 @@ namespace Tamagotchi.Tests
         {
             _savedMute = PlayerPrefs.GetInt("Tamagotchi.Muted", 0);
             PlayerPrefs.SetInt("Tamagotchi.Muted", 0);
+            TestSave.Isolate();
             yield return SceneManager.LoadSceneAsync("Main");
             yield return null;
             _ui = Object.FindAnyObjectByType<UIManager>();

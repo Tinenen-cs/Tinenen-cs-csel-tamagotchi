@@ -31,6 +31,14 @@ public static class ProjectSetup
         Debug.Log("[ProjectSetup] Done.");
     }
 
+    /// <summary>Deletes the saved pet so the next Play starts a new game.</summary>
+    [MenuItem("Tamagotchi/Clear Save Data")]
+    public static void ClearSaveData()
+    {
+        Tamagotchi.SaveSystem.ClearSave();
+        Debug.Log("[ProjectSetup] Save data cleared. The next Play starts a new pet.");
+    }
+
     /// <summary>Locks the app to portrait and sets names / bundle IDs for every platform.</summary>
     public static void ApplyPlayerSettings()
     {
