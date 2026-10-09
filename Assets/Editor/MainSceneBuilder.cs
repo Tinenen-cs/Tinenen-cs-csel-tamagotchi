@@ -132,14 +132,14 @@ public static class MainSceneBuilder
         var bgImage = Img(bg.gameObject, Sprite("Backgrounds/cozy_home.png"));
         var bgFit = bg.gameObject.AddComponent<AspectRatioFitter>();
         bgFit.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent; // fill the screen, crop the sides
-        bgFit.aspectRatio = 493f / 391f;
+        bgFit.aspectRatio = bgImage.sprite.rect.width / bgImage.sprite.rect.height; // 1080x1920 portrait
 
         // Copy of the background on top that fades out the old scene when it changes (crossfade).
         var bgFade = Rect("BackgroundFade", bgLayer, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
         var bgFadeImage = Img(bgFade.gameObject, Sprite("Backgrounds/cozy_home.png"));
         var bgFadeFit = bgFade.gameObject.AddComponent<AspectRatioFitter>();
         bgFadeFit.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
-        bgFadeFit.aspectRatio = 493f / 391f;
+        bgFadeFit.aspectRatio = bgFadeImage.sprite.rect.width / bgFadeImage.sprite.rect.height;
         bgFadeImage.enabled = false;
 
         var dim = Rect("DimOverlay", bgLayer, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);

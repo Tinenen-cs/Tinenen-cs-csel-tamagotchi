@@ -43,6 +43,14 @@ namespace Tamagotchi.Tests
         }
 
         [Test]
+        public void Backgrounds_ArePortrait1080x1920()
+        {
+            var bg = GameObject.Find("Background").GetComponent<Image>();
+            Assert.AreEqual(1080f, bg.sprite.rect.width);
+            Assert.AreEqual(1920f, bg.sprite.rect.height);
+        }
+
+        [Test]
         public void HungerBar_IsRedWhenLow_GreenWhenFull()
         {
             _ui.HungerBar.SetValue(5);

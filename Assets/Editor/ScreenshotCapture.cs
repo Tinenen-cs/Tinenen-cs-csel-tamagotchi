@@ -46,8 +46,6 @@ public static class ScreenshotCapture
             var pet = Find<RectTransform>("Pet");
             pet.anchoredPosition = new Vector2(0, 0.20f * 536f); // lifted onto the bed (PetController.sleepLift)
             SetBackground("moonlit_bedroom");
-            var night = Find<RectTransform>("Background");
-            night.pivot = new Vector2(1f, night.pivot.y); // same as PetController.sleepBackgroundAlign
             Find<Image>("DimOverlay").color = new Color(0.05f, 0.05f, 0.2f, 0.45f);
             Find<RectTransform>("SpeechBubble").gameObject.SetActive(false); // hidden while asleep
             Find<StatBar>("EnergyBar").SetValue(35);

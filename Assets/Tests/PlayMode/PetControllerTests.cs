@@ -104,8 +104,6 @@ namespace Tamagotchi.Tests
             yield return Wait(0.5f);
             Assert.AreEqual(PetState.Sleeping, _pet.State);
             Assert.AreEqual("moonlit_bedroom", _ui.Backgrounds.Current.name);
-            var bg = GameObject.Find("Background").GetComponent<RectTransform>();
-            Assert.AreEqual(1f, bg.pivot.x, 0.001f, "Night room should show its right side (painted bed off screen).");
             var dim = GameObject.Find("DimOverlay").GetComponent<UnityEngine.UI.Image>();
             Assert.Greater(dim.color.a, 0.1f, "Scene should be dimmed while sleeping.");
 
@@ -113,7 +111,6 @@ namespace Tamagotchi.Tests
             yield return null;
             Assert.AreNotEqual(PetState.Sleeping, _pet.State);
             Assert.AreEqual(day, _ui.Backgrounds.Current, "Day background should come back.");
-            Assert.AreEqual(0.5f, bg.pivot.x, 0.001f, "Day background should be centred again.");
         }
 
         [UnityTest]
