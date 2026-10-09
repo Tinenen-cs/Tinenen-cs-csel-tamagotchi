@@ -118,7 +118,8 @@ and it gets **sick**.
 Assets/
   Art/
     Pet/Hamster/      hamster animation frames (idle, eating, studying, sleeping, happy, playing, sad, crying)
-    Backgrounds/      6 full scenes (cozy_home, moonlit_bedroom, sunny_garden, beach, forest_stream, sunset_rooftop)
+    Backgrounds/      6 scenes, portrait 1080x1920 (cozy_home, moonlit_bedroom, sunny_garden, beach, forest_stream,
+                      sunset_rooftop), cropped + scaled from the pack by Tools/make_backgrounds.py
     Props/            props from the pack (the food bowl and soft bed are used in game)
     UI/               Buttons/, Dialogs/, Status/ sprites from the pack
       Icons/          round stat icons cut from the Status bars (by Tools/make_ui_sprites.py)
@@ -162,6 +163,7 @@ Tools/
   screenshots.sh      regenerates Docs/screenshot.png and Docs/states_overview.png
   make_ui_sprites.py  cleans button sprites, cuts icons, draws frames (Python + Pillow)
   make_music.py       generates the background music loop (Python standard library)
+  make_backgrounds.py crops the pack's wide scenes to 9:16 and scales them to 1080x1920 (Python + Pillow)
 ```
 
 ## Audio credits
@@ -198,6 +200,7 @@ edit the list in `Assets/Editor/MainSceneBuilder.cs` (`SetSounds`) instead.
 |-------|--------|---------|
 | Hamster sprites, backgrounds, props, UI sprites | Supplied by the project owner (tamagotchi asset pack) | Project owner's own assets |
 | `Assets/Art/UI/Icons/*`, `Assets/Art/UI/Generated/*` (incl. the speech bubble made from the pack's `chat_bubble.png`) | Derived from / drawn to match the pack by `Tools/make_ui_sprites.py` | Same as above |
+| `Assets/Art/Backgrounds/*` (1080x1920) | Cropped to 9:16 and scaled up (nearest-neighbour) from the pack's `Scenes/` by `Tools/make_backgrounds.py` | Same as above |
 | `Assets/Art/UI/Buttons/star.png`, `music.png`, `sleep_z.png` | Re-cut from the pack's `Source/complete_generated_asset_sheet.png` (the pack's own copies are clipped) | Same as above |
 | `Assets/Art/Fonts/KenneyPixel.ttf` | [Kenney Fonts](https://kenney.nl/assets/kenney-fonts) by Kenney | CC0 1.0 (`KenneyFonts-License.txt`) |
 | `Assets/TextMesh Pro/*` (LiberationSans etc.) | Unity TextMesh Pro essential resources | Unity Companion License / SIL OFL (LiberationSans) |
