@@ -46,8 +46,9 @@ namespace Tamagotchi.Pet
         [Header("Sleeping")]
         [SerializeField] private BackgroundSwitcher backgrounds;
         [SerializeField] private Sprite sleepBackground;
-        [Tooltip("Which part of the night image to show: 0 = left edge, 1 = right edge. 1 keeps its painted bed off screen.")]
-        [Range(0, 1)] [SerializeField] private float sleepBackgroundAlign = 1f;
+        [Tooltip("Which part of a wider-than-screen night image to show (0 = left, 1 = right). The bundled one is " +
+                 "already cropped to portrait by Tools/make_backgrounds.py (bed off screen), so 0.5 is fine.")]
+        [Range(0, 1)] [SerializeField] private float sleepBackgroundAlign = 0.5f;
         [SerializeField] private Image dimOverlay;
         [Range(0, 1)] [SerializeField] private float sleepDim = 0.45f;
         [Tooltip("Bed the pet lies on while sleeping (shown only then).")]
