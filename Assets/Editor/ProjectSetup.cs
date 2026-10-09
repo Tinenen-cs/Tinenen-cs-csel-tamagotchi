@@ -115,8 +115,28 @@ public static class ProjectSetup
         // Stat bars, pet area and action buttons.
         MainSceneBuilder.Build(canvasGo, safe);
 
+        // Lay the UI out at the phone size before saving. Batch mode has no screen, so otherwise the
+        // phone frame is saved at a tiny width and the Scene view shows a squashed layout until Play.
+        // (Sizes driven by fitters/layout groups are never saved; Unity recomputes them on open.)
+        LayoutAtReferenceSize(canvasGo);
+
         EditorSceneManager.SaveScene(scene, MainScenePath);
         EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(MainScenePath, true) };
+    }
+
+    /// <summary>Sizes the canvas to 1080x1920 and runs every layout component once.</summary>
+    private static void LayoutAtReferenceSize(GameObject canvasGo)
+    {
+        var rt = (RectTransform)canvasGo.transform;
+        rt.anchorMin = rt.anchorMax = rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta = ReferenceResolution;
+        rt.localScale = Vector3.one;
+        for (int pass = 0; pass < 2; pass++)
+        {
+            foreach (var frame in canvasGo.GetComponentsInChildren<PortraitFrame>(true)) frame.Refresh();
+            foreach (var r in canvasGo.GetComponentsInChildren<RectTransform>(true)) LayoutRebuilder.ForceRebuildLayoutImmediate(r);
+            Canvas.ForceUpdateCanvases();
+        }
     }
 
     // ---------- helpers ----------
