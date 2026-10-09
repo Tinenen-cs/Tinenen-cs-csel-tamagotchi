@@ -23,7 +23,7 @@ and it gets **sick**.
 | 5 | Audio (AudioManager, CC0 sounds, music, mute) | ✅ Done |
 | 6 | Save/load with offline decay | ✅ Done |
 | 7 | Polish (petting, bar pops, scene crossfade, game-over pop-in, app icon) | ✅ Done |
-| 8 | WebGL (GitHub Pages) and mobile builds | ⏳ Planned |
+| 8 | Builds: Windows ✅, Android APK ✅, WebGL on GitHub Pages ⏳ (needs WebGL Build Support module) | 🚧 In progress |
 
 ## Features
 
@@ -126,6 +126,7 @@ Assets/
     Fonts/            Kenney Pixel font (CC0) + its TextMesh Pro font asset
     Icon/app_icon.png app icon (hamster face on a cream tile, made by Tools/make_ui_sprites.py)
   Editor/
+    BuildScript.cs             menu "Tamagotchi > Build": WebGL, Android APK, Windows
     ProjectSetup.cs            menu "Tamagotchi > Setup Project": player settings + generates Main.unity
     MainSceneBuilder.cs        builds the whole UI layout and wires every reference
     PhoneGameViewSize.cs       adds/selects the "Phone 1080x1920" Game view size
@@ -156,6 +157,8 @@ Assets/
 Docs/                 screenshots
 Tools/
   verify.sh           batch-mode check: compile, regenerate scene, run tests
+  build.sh            command-line builds: webgl | android | windows (-> Builds/)
+  publish_webgl.sh    pushes Builds/WebGL to the gh-pages branch (GitHub Pages)
   screenshots.sh      regenerates Docs/screenshot.png and Docs/states_overview.png
   make_ui_sprites.py  cleans button sprites, cuts icons, draws frames (Python + Pillow)
   make_music.py       generates the background music loop (Python standard library)
@@ -225,7 +228,13 @@ edit the list in `Assets/Editor/MainSceneBuilder.cs` (`SetSounds`) instead.
    ```bash
    UNITY="/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/MacOS/Unity" Tools/verify.sh
    ```
-   _A command-line build command is added in step 8._
+6. Optional command-line builds (output in `Builds/`; Unity must be closed):
+   ```bash
+   export UNITY="/Applications/Unity/Hub/Editor/6000.3.24f1/Unity.app/Contents/MacOS/Unity"
+   Tools/build.sh webgl     # browser build   -> Builds/WebGL/
+   Tools/build.sh android   # Android phone   -> Builds/Android/CSEL-Tamagotchi.apk
+   ```
+   The same builds are in the Editor menu **Tamagotchi → Build**.
 
 ### Test-run in the Unity Editor (Windows, step by step)
 
@@ -264,14 +273,45 @@ edit the list in `Assets/Editor/MainSceneBuilder.cs` (`SetSounds`) instead.
 
 ### B. Other devices
 
-- **Windows / Linux:** clone the repo the same way (Git Bash, PowerShell or a terminal), then
-  add the folder in Unity Hub and open `Assets/Scenes/Main.unity`.
-- **Android:** _detailed steps added in step 8_ (File → Build Profiles → Android → enable Developer
-  Mode and USB debugging on the phone → Build And Run).
-- **iPhone:** _detailed steps added in step 8_ (File → Build Profiles → iOS → open the generated Xcode
-  project → sign with your Apple ID → Run on device; needs a Mac).
-- **Browser (any device):** _WebGL build on GitHub Pages added in step 8_. It will be at
-  <https://tinenen-cs.github.io/Tinenen-cs-csel-tamagotchi/>.
+#### Browser (any phone or computer) - no install
+Play at **<https://tinenen-cs.github.io/Tinenen-cs-csel-tamagotchi/>**. On a phone, open the link and use
+**Share → Add to Home Screen** for an app-like icon. Your pet is saved in that browser.
+
+To publish a new version (project owner, Unity closed, *WebGL Build Support* module installed):
+```bash
+Tools/build.sh webgl        # builds Builds/WebGL/
+Tools/publish_webgl.sh      # pushes it to the gh-pages branch; the site updates in ~1 minute
+```
+First time only: on GitHub open **Settings → Pages**, set **Source: Deploy from a branch**, branch
+**gh-pages**, folder **/ (root)**, and **Save**.
+
+#### Android phone
+1. In Unity Hub → **Installs** → ⚙ next to 6000.3.24f1 → **Add modules** → tick **Android Build Support**
+   (with *OpenJDK* and *Android SDK & NDK Tools*) → **Install**.
+2. Build the APK: menu **Tamagotchi → Build → Android APK**, or `Tools/build.sh android`.
+   The file is `Builds/Android/CSEL-Tamagotchi.apk`.
+3. Install it, either:
+   - **USB:** on the phone open **Settings → About phone** and tap **Build number** 7 times (Developer
+     options on), then **Settings → Developer options → USB debugging** on. Connect the cable, open
+     **File → Build Profiles → Android**, pick your phone under *Run Device* and click **Build And Run**; or
+   - **Copy the APK:** send `CSEL-Tamagotchi.apk` to the phone (cable, Drive, email), tap it, and allow
+     **Install unknown apps** for the app you opened it with.
+
+#### iPhone (needs a Mac with Xcode)
+1. In Unity Hub add the **iOS Build Support** module to 6000.3.24f1; install **Xcode** from the Mac App Store.
+2. In Unity: **File → Build Profiles → iOS → Switch Platform → Build**, choose a folder (e.g. `Builds/iOS`).
+3. Open `Builds/iOS/Unity-iPhone.xcodeproj` in Xcode. Select the **Unity-iPhone** target →
+   **Signing & Capabilities** → tick **Automatically manage signing** → **Team: your Apple ID**
+   (Xcode → Settings → Accounts → **+** to add it). If the bundle ID is taken, change it to something unique.
+4. Connect the iPhone, select it at the top of Xcode and press **▶ Run**. The first time, on the phone open
+   **Settings → General → VPN & Device Management** and **Trust** your developer certificate.
+   (A free Apple ID lets the app run for 7 days before it needs re-installing.)
+
+#### Windows / Linux
+- **Play in Unity:** clone the repo the same way (Git Bash, PowerShell or a terminal), add the folder in
+  Unity Hub and open `Assets/Scenes/Main.unity` (see *Test-run in the Unity Editor* above).
+- **Windows app:** menu **Tamagotchi → Build → Windows** or `Tools/build.sh windows`, then run
+  `Builds/Windows/CSEL-Tamagotchi.exe` (portrait window, resizable).
 
 ## Troubleshooting
 
