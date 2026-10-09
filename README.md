@@ -19,7 +19,7 @@ Ready-to-run builds are on the **[Releases page](https://github.com/Tinenen-cs/T
 | Device | File | How to run |
 |--------|------|------------|
 | Windows | `CSEL-Tamagotchi-Windows.zip` | Unzip, double-click `CSEL-Tamagotchi.exe`. If SmartScreen warns, click **More info → Run anyway**. |
-| Android | `CSEL-Tamagotchi-Android.apk` | Download on the phone, tap it, allow **Install unknown apps**. |
+| Android | [`CSEL-Tamagotchi-Android.apk`](https://github.com/Tinenen-cs/Tinenen-cs-csel-tamagotchi/releases/latest/download/CSEL-Tamagotchi-Android.apk) (direct download, always the newest) | Download on the phone, tap it, allow **Install unknown apps**. |
 | macOS | `CSEL-Tamagotchi-macOS.zip` | Unzip, **right-click** `CSEL-Tamagotchi.app` → **Open** → **Open** (first time only; the app isn't notarized). |
 
 ## Activity: Monster Simulator rules
