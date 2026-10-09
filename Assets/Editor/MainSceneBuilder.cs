@@ -335,7 +335,7 @@ public static class MainSceneBuilder
             ("hangry", "SFX/hangry.ogg", 0.5f, 0.05f),
             ("sick", "SFX/sick.ogg", 0.6f, 0f),
             ("gameover", "SFX/gameover.ogg", 0.7f, 0f),
-            ("music", "Music/hammy_theme.wav", 0.45f, 0f),
+            ("music", "Music/hammy_theme.wav", 0.6f, 0f),   // minimal, quiet loop (Tools/make_music.py)
         });
 
         var petAudio = game.AddComponent<PetAudio>();
