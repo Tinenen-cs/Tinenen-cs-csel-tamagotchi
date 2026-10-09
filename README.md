@@ -12,6 +12,16 @@ and it gets **sick**.
 > Screenshots generated with **Tamagotchi → Capture Screenshot** / **Capture State Screenshots**
 > (states left to right: eating, sleeping in the bed, hangry, playing at the beach).
 
+## Download & play
+
+Ready-to-run builds are on the **[Releases page](https://github.com/Tinenen-cs/Tinenen-cs-csel-tamagotchi/releases/latest)**:
+
+| Device | File | How to run |
+|--------|------|------------|
+| Windows | `CSEL-Tamagotchi-Windows.zip` | Unzip, double-click `CSEL-Tamagotchi.exe`. If SmartScreen warns, click **More info → Run anyway**. |
+| Android | `CSEL-Tamagotchi-Android.apk` | Download on the phone, tap it, allow **Install unknown apps**. |
+| macOS | `CSEL-Tamagotchi-macOS.zip` | Unzip, **right-click** `CSEL-Tamagotchi.app` → **Open** → **Open** (first time only; the app isn't notarized). |
+
 ## Status
 
 | Step | Feature | Status |
@@ -160,6 +170,7 @@ Tools/
   verify.sh           batch-mode check: compile, regenerate scene, run tests
   build.sh            command-line builds: webgl | android | windows (-> Builds/)
   publish_webgl.sh    pushes Builds/WebGL to the gh-pages branch (GitHub Pages)
+  package_release.py  zips builds into Builds/Release/ and can publish a GitHub Release
   screenshots.sh      regenerates Docs/screenshot.png and Docs/states_overview.png
   make_ui_sprites.py  cleans button sprites, cuts icons, draws frames (Python + Pillow)
   make_music.py       generates the background music loop (Python standard library)
@@ -211,9 +222,19 @@ edit the list in `Assets/Editor/MainSceneBuilder.cs` (`SetSounds`) instead.
 
 ### A. Mac (Terminal)
 
-1. Clone the repo:
+1. Clone the repo (first time only):
    ```bash
    git clone https://github.com/Tinenen-cs/Tinenen-cs-csel-tamagotchi.git && cd Tinenen-cs-csel-tamagotchi
+   ```
+   **Already cloned?** Don't clone again. Close Unity, then update the folder you have:
+   ```bash
+   cd ~/Tinenen-cs-csel-tamagotchi     # or wherever you cloned it
+   git pull
+   ```
+   If `git pull` stops with "Your local changes would be overwritten" (Unity touched some files on this
+   Mac), throw those local changes away and pull again (this keeps nothing you made on the Mac):
+   ```bash
+   git restore . && git clean -fd Assets ProjectSettings && git pull
    ```
 2. Install **Unity Hub** from <https://unity.com/download>. In Unity Hub, go to **Installs → Install
    Editor** and choose **6000.3.24f1**. If it isn't listed, use the
@@ -237,7 +258,13 @@ edit the list in `Assets/Editor/MainSceneBuilder.cs` (`SetSounds`) instead.
    Tools/build.sh webgl     # browser build   -> Builds/WebGL/
    Tools/build.sh android   # Android phone   -> Builds/Android/CSEL-Tamagotchi.apk
    ```
-   The same builds are in the Editor menu **Tamagotchi → Build**.
+   The same builds are in the Editor menu **Tamagotchi → Build** (including **macOS**).
+   Package them for download, and optionally publish a GitHub Release (project owner):
+   ```bash
+   Tools/build.sh mac                              # -> Builds/macOS/CSEL-Tamagotchi.app
+   python3 Tools/package_release.py                # -> Builds/Release/*.zip, *.apk
+   python3 Tools/package_release.py --publish v1.0.0
+   ```
 
 ### Test-run in the Unity Editor (Windows, step by step)
 
@@ -318,6 +345,9 @@ First time only: on GitHub open **Settings → Pages**, set **Source: Deploy fro
 
 ## Troubleshooting
 
+- **The Scene view shows a squashed/wide layout:** that's only the editing view. Select the **Game** tab
+  with **Phone (1080x1920)**; to see the phone layout in the Scene view, double-click **Canvas** in the
+  Hierarchy. If it still looks wrong after `git pull`, run **Tamagotchi → Setup Project** to rebuild the scene.
 - **The pet doesn't start fresh when I press Play:** the game continues your saved pet (that's the
   save system). For a brand-new pet use **Tamagotchi → Clear Save Data**, or press **RESTART** after it gets sick.
 
