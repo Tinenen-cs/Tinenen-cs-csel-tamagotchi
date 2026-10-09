@@ -46,7 +46,7 @@ namespace Tamagotchi.Pet
         public bool IsExhausted => Stamina < config.staminaLock;
         public bool CanPlay => !IsSick && !IsExhausted;
         public bool CanStudy => !IsSick && !IsExhausted;
-        /// <summary>[Rule] Sleep is only unlocked while stamina is below 20.</summary>
+        /// <summary>[Rule] The pet can only fall asleep while stamina is below 20.</summary>
         public bool CanSleep => !IsSick && !IsSleeping && IsExhausted;
 
         /// <summary>Any stat value changed.</summary>

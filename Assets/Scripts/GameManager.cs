@@ -98,8 +98,14 @@ namespace Tamagotchi
                     Say(ok ? "Wheee! Fun!" : "Too tired to play...");
                     break;
                 case PetAction.Sleep:
-                    ok = stats.Sleep(); // only allowed while stamina < 20; restores it to full
-                    if (!ok) Say("I'm not tired yet!");
+                    // [Rule] Sleep only works while stamina is below 20; it restores stamina to full.
+                    // The button stays pressable: otherwise the pet refuses and says why.
+                    ok = stats.Sleep();
+                    if (!ok && !stats.IsSleeping && !stats.IsSick)
+                    {
+                        Say("I can't sleep...\nI'm not sleepy yet!");
+                        return; // just the message; no sad reaction
+                    }
                     break;
             }
             // Reaching 100 happiness wins over the action's own reaction (PetController already shows Happy).
@@ -151,7 +157,8 @@ namespace Tamagotchi
         }
 
         /// <summary>
-        /// [Rule] Play and Study are locked while stamina is below 20; Sleep is unlocked only then.
+        /// [Rule] Play and Study are locked while stamina is below 20. Sleep stays pressable, but the pet
+        /// only sleeps while stamina is below 20 (otherwise it says it isn't sleepy).
         /// Everything is locked while the pet is sick.
         /// </summary>
         private void RefreshLocks()
@@ -161,7 +168,7 @@ namespace Tamagotchi
             ui.SetUnlocked(PetAction.Scold, alive);
             ui.SetUnlocked(PetAction.Play, stats.CanPlay);
             ui.SetUnlocked(PetAction.Study, stats.CanStudy);
-            ui.SetUnlocked(PetAction.Sleep, stats.CanSleep);
+            ui.SetUnlocked(PetAction.Sleep, alive);
         }
 
         private bool _reachedFull; // set while an action pushes happiness to exactly 100
