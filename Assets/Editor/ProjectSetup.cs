@@ -69,6 +69,7 @@ public static class ProjectSetup
         cam.clearFlags = CameraClearFlags.SolidColor;
         cam.backgroundColor = new Color32(0xFF, 0xF1, 0xE0, 0xFF);
         camGo.transform.position = new Vector3(0, 0, -10);
+        camGo.AddComponent<AudioListener>(); // the "ears" of the scene; without it nothing is heard
 
         // Event system using the new Input System (touch + mouse).
         var esGo = new GameObject("EventSystem");
