@@ -13,6 +13,8 @@ namespace Tamagotchi
         [SerializeField] private PetStats stats;
         [SerializeField] private UIManager ui;
         [SerializeField] private PetController pet;
+        [Tooltip("Optional: used for the welcome-back message after time away.")]
+        [SerializeField] private SaveSystem save;
         [Tooltip("Name used in the mood messages.")]
         [SerializeField] private string petName = "Hammy";
 
@@ -40,10 +42,15 @@ namespace Tamagotchi
 
         private void Start()
         {
-            ui.ShowGameOver(false);
+            // Stats may have been loaded from a save (SaveSystem runs first), possibly already sick.
+            ui.ShowGameOver(stats.IsSick);
+            ui.SetActionsInteractable(!stats.IsSick);
             RefreshBars();
-            ui.SetHangry(stats.IsHangry);
-            if (stats.IsHangry) ui.ShowMood(HangryMessage, sticky: true);
+            ui.SetHangry(stats.IsHangry && !stats.IsSick);
+            if (stats.IsSick) ui.ShowMood("I feel sick...");
+            else if (stats.IsHangry) ui.ShowMood(HangryMessage, sticky: true);
+            else if (save != null && save.LastOfflineSeconds >= 60f)
+                ui.ShowMood("I missed you! (" + SaveSystem.FormatDuration(save.LastOfflineSeconds) + ")");
             else ui.ShowMood($"Hi! I'm {PetName}!");
         }
 
@@ -89,6 +96,7 @@ namespace Tamagotchi
         private void OnRestartPressed()
         {
             stats.ResetToStart();
+            if (save != null) save.Save();
             ui.ShowGameOver(false);
             ui.SetActionsInteractable(true);
             ui.SetHangry(stats.IsHangry);
