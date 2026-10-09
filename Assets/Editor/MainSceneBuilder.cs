@@ -1,4 +1,5 @@
 using Tamagotchi;
+using Tamagotchi.Audio;
 using Tamagotchi.Pet;
 using Tamagotchi.UI;
 using Tamagotchi.World;
@@ -281,6 +282,41 @@ public static class MainSceneBuilder
         Set(manager, "stats", stats);
         Set(manager, "ui", ui);
         Set(manager, "pet", controller);
+
+        // ---------- Audio: one SFX source + one music source ----------
+        var audioGo = new GameObject("Audio");
+        var sfx = audioGo.AddComponent<AudioSource>();
+        sfx.playOnAwake = false;
+        var music = audioGo.AddComponent<AudioSource>();
+        music.playOnAwake = false;
+        music.loop = true;
+        var audio = audioGo.AddComponent<AudioManager>();
+        Set(audio, "sfxSource", sfx);
+        Set(audio, "musicSource", music);
+        SetSounds(audio, new[]
+        {
+            // name, file under Assets/Audio, volume, pitch variance (see README > Audio credits)
+            ("click", "SFX/click.ogg", 0.6f, 0.1f),
+            ("mute", "SFX/mute.ogg", 0.7f, 0f),
+            ("scene", "SFX/scene.ogg", 0.6f, 0.05f),
+            ("scold", "SFX/scold.ogg", 0.7f, 0f),
+            ("eat", "SFX/eat.ogg", 0.8f, 0.15f),
+            ("study", "SFX/study.ogg", 0.8f, 0.1f),
+            ("sleep", "SFX/sleep.ogg", 0.8f, 0.05f),
+            ("play", "SFX/play.ogg", 0.6f, 0.1f),
+            ("happy", "SFX/happy.ogg", 0.6f, 0f),
+            ("sad", "SFX/sad.ogg", 0.6f, 0f),
+            ("cry", "SFX/cry.ogg", 0.6f, 0f),
+            ("hangry", "SFX/hangry.ogg", 0.5f, 0.05f),
+            ("sick", "SFX/sick.ogg", 0.6f, 0f),
+            ("gameover", "SFX/gameover.ogg", 0.7f, 0f),
+            ("music", "Music/hammy_theme.wav", 0.45f, 0f),
+        });
+
+        var petAudio = game.AddComponent<PetAudio>();
+        Set(petAudio, "ui", ui);
+        Set(petAudio, "pet", controller);
+        Set(petAudio, "stats", stats);
     }
 
     /// <summary>All hamster frames for an animation name, e.g. "idle" -> idle_01..idle_04.</summary>
@@ -295,6 +331,28 @@ public static class MainSceneBuilder
         }
         if (list.Count == 0) Debug.LogError("[MainSceneBuilder] No frames found for " + name);
         return list.ToArray();
+    }
+
+    /// <summary>Fills AudioManager's sound list. "music" loops; everything else is a one-shot effect.</summary>
+    private static void SetSounds(AudioManager audio, (string name, string file, float volume, float pitchVariance)[] entries)
+    {
+        var so = new SerializedObject(audio);
+        var list = so.FindProperty("sounds");
+        list.arraySize = entries.Length;
+        for (int i = 0; i < entries.Length; i++)
+        {
+            var e = list.GetArrayElementAtIndex(i);
+            var clip = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio/" + entries[i].file);
+            if (clip == null) Debug.LogError("[MainSceneBuilder] Missing audio: Assets/Audio/" + entries[i].file);
+            e.FindPropertyRelative("name").stringValue = entries[i].name;
+            e.FindPropertyRelative("clip").objectReferenceValue = clip;
+            e.FindPropertyRelative("volume").floatValue = entries[i].volume;
+            e.FindPropertyRelative("volumeVariance").floatValue = entries[i].name == "music" ? 0f : 0.1f;
+            e.FindPropertyRelative("pitch").floatValue = 1f;
+            e.FindPropertyRelative("pitchVariance").floatValue = entries[i].pitchVariance;
+            e.FindPropertyRelative("loop").boolValue = entries[i].name == "music";
+        }
+        so.ApplyModifiedPropertiesWithoutUndo();
     }
 
     /// <summary>Fixed layout size for an element inside a layout group.</summary>
