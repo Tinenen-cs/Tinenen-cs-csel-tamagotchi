@@ -22,7 +22,7 @@ and it gets **sick**.
 | 4 | Pet state machine and emotes (idle, eating, studying, sleeping, playing, happy, sad, crying, hangry, sick) | ✅ Done |
 | 5 | Audio (AudioManager, CC0 sounds, music, mute) | ✅ Done |
 | 6 | Save/load with offline decay | ✅ Done |
-| 7 | Polish | ⏳ Planned |
+| 7 | Polish (petting, bar pops, scene crossfade, game-over pop-in, app icon) | ✅ Done |
 | 8 | WebGL (GitHub Pages) and mobile builds | ⏳ Planned |
 
 ## Features
@@ -63,6 +63,9 @@ and it gets **sick**.
 - **Audio for everything:** a click for every button, a unique sound for each button's action and for
   every emote (eat, study, sleep, play, happy, sad, cry, hangry, sick, game over), a repeating warning
   while hangry, and a looping background tune. The ♪ button mutes everything and is remembered.
+- **Polish:** tap the hamster to pet it (a happy wiggle, "Hehe, that tickles!", a little Happiness; not
+  while asleep or sick), stat bars pop when an action changes them, scenes crossfade (also when falling
+  asleep / waking up), the game-over card pops in, and the app has a hamster-face icon.
 - **Save/load:** the pet (all stats, asleep or not, the chosen scene) is saved automatically every
   5 seconds, when the app is minimised, and when it quits. Time away counts at a slower "offline"
   speed (default 5%: one hour away = 3 minutes of decay, capped at 72 hours), so the pet is hungrier
@@ -79,6 +82,7 @@ and it gets **sick**.
 | Play | Happiness +20, Energy −8, Hunger −3 (refused if Energy < 8) |
 | Scene | Changes the background (cozy home → sunny garden → beach → forest stream → sunset rooftop → moonlit bedroom) |
 | ♪ (top right) | Mute / unmute music and sounds (remembered next time; the icon fades while muted) |
+| Tap the hamster | Pet it: Happiness +3, happy reaction (once per second; not while asleep or sick) |
 | Restart | On the game-over card: new pet with starting stats |
 
 ## Tuning the stats
@@ -120,6 +124,7 @@ Assets/
       Icons/          round stat icons cut from the Status bars (by Tools/make_ui_sprites.py)
       Generated/      9-slice bar/button/panel frames drawn in the pack's palette
     Fonts/            Kenney Pixel font (CC0) + its TextMesh Pro font asset
+    Icon/app_icon.png app icon (hamster face on a cream tile, made by Tools/make_ui_sprites.py)
   Editor/
     ProjectSetup.cs            menu "Tamagotchi > Setup Project": player settings + generates Main.unity
     MainSceneBuilder.cs        builds the whole UI layout and wires every reference
@@ -131,6 +136,7 @@ Assets/
     UI/UIManager.cs   owns all UI: stat bars, buttons, mood text; raises ActionPressed / MutePressed
     UI/StatBar.cs     one 0-100 meter (fixed color or gradient)
     UI/PressBounce.cs squash-and-spring feedback on button press
+    UI/PopIn.cs       fade + springy scale-in when a panel appears (game-over card)
     UI/SpeechBubble.cs  pop-in speech bubble above the pet (normal or sticky messages)
     UI/SafeArea.cs    keeps UI clear of notches and cut-outs
     UI/PortraitFrame.cs keeps the UI a centered 9:16 column in wide windows
@@ -246,6 +252,7 @@ edit the list in `Assets/Editor/MainSceneBuilder.cs` (`SetSounds`) instead.
    - **SLEEP:** the hamster sleeps, the screen dims and turns to the moonlit bedroom while Energy refills;
      tap again to wake up.
    - **PLAY:** the hamster plays and bounces, then looks happy.
+   - **Tap the hamster** to pet it; watch the bars pop when a button changes them.
    - **SCENE:** the background changes.
    - To see **hangry** and **sick** quickly, use demo mode (see *Tuning the stats*).
    - **Save/load:** stop and press Play again; the pet continues where it was (minus a little offline

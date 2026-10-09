@@ -144,6 +144,14 @@ namespace Tamagotchi.Pet
             }
         }
 
+        /// <summary>Short happy reaction when the player pets the hamster.</summary>
+        public void ReactToPetting()
+        {
+            if (stats.IsSick || stats.IsSleeping) return;
+            _hasFollowUp = false;
+            StartReaction(PetState.Happy, happyAfterPlaySeconds);
+        }
+
         /// <summary>The state the stats call for, ignoring reactions.</summary>
         public PetState BaseState()
         {

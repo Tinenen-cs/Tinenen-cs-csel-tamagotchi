@@ -63,6 +63,8 @@ namespace Tamagotchi.Pet
         public float playHappiness = 20f;
         public float playEnergyCost = 8f;
         public float playHungerCost = 3f;
+        [Tooltip("Happiness gained when the player taps (pets) the hamster.")]
+        public float petHappiness = 3f;
         [Tooltip("Happiness lost when the pet is scolded.")]
         public float scoldHappinessCost = 10f;
     }

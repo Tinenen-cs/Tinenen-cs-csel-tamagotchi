@@ -16,10 +16,14 @@ namespace Tamagotchi.World
         [SerializeField] private AspectRatioFitter fitter;
         [Tooltip("Backgrounds the Scene button cycles through, in order. Element 0 is the default.")]
         [SerializeField] private Sprite[] backgrounds = Array.Empty<Sprite>();
+        [Tooltip("Optional: copy of the background on top that fades out the old scene (crossfade).")]
+        [SerializeField] private Image fadeImage;
+        [SerializeField] private float fadeSeconds = 0.4f;
 
         private int _index;
         private Sprite _override;
         private float _alignX = 0.5f; // 0 = show the left edge, 0.5 = middle, 1 = right edge
+        private float _fade;          // 1 = old scene fully on top, fades to 0
 
         /// <summary>Raised whenever the chosen background index changes (for saving).</summary>
         public event Action<int> IndexChanged;
@@ -28,7 +32,22 @@ namespace Tamagotchi.World
         public int Count => backgrounds.Length;
         public Sprite Current => target != null ? target.sprite : null;
 
-        private void Start() => Refresh();
+        private void Start()
+        {
+            Refresh();
+            if (fadeImage != null) fadeImage.enabled = false;
+        }
+
+        /// <summary>True while the previous scene is still fading out.</summary>
+        public bool IsFading => _fade > 0f;
+
+        private void Update()
+        {
+            if (_fade <= 0f || fadeImage == null) return;
+            _fade = Mathf.Max(0f, _fade - Time.unscaledDeltaTime / Mathf.Max(0.01f, fadeSeconds));
+            fadeImage.color = new Color(1f, 1f, 1f, _fade);
+            if (_fade <= 0f) fadeImage.enabled = false;
+        }
 
         /// <summary>Cycles to the next background.</summary>
         public void Next() => SetIndex(_index + 1);
@@ -65,6 +84,8 @@ namespace Tamagotchi.World
         private void Refresh()
         {
             if (target == null) return;
+            Sprite oldSprite = target.sprite;
+            Vector2 oldPivot = target.rectTransform.pivot;
             if (_override != null) target.sprite = _override;
             else if (backgrounds.Length > 0) target.sprite = backgrounds[_index];
 
@@ -75,6 +96,18 @@ namespace Tamagotchi.World
             // width, so 0..1 always keeps the screen covered.
             var rt = target.rectTransform;
             rt.pivot = new Vector2(_override != null ? _alignX : 0.5f, rt.pivot.y);
+
+            // Crossfade: show the old scene on top (same shape and position) and fade it out.
+            if (Application.isPlaying && fadeImage != null && oldSprite != null && oldSprite != target.sprite)
+            {
+                fadeImage.sprite = oldSprite;
+                fadeImage.rectTransform.pivot = oldPivot;
+                var fadeFit = fadeImage.GetComponent<AspectRatioFitter>();
+                if (fadeFit != null) fadeFit.aspectRatio = oldSprite.rect.width / oldSprite.rect.height;
+                fadeImage.enabled = true;
+                fadeImage.color = Color.white;
+                _fade = 1f;
+            }
         }
     }
 }

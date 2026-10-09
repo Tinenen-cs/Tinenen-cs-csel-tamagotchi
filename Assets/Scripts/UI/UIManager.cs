@@ -32,6 +32,8 @@ namespace Tamagotchi.UI
 
         [Header("Other")]
         [SerializeField] private Button muteButton;
+        [Tooltip("Invisible button on the hamster: tapping it pets the pet.")]
+        [SerializeField] private Button petButton;
         [SerializeField] private Image muteIcon;
         [Tooltip("Speech bubble above the pet's head.")]
         [SerializeField] private SpeechBubble speechBubble;
@@ -43,6 +45,9 @@ namespace Tamagotchi.UI
 
         /// <summary>Raised when one of the pet action buttons is tapped.</summary>
         public event Action<PetAction> ActionPressed;
+
+        /// <summary>Raised when the player taps the hamster.</summary>
+        public event Action PetTapped;
 
         /// <summary>Raised when the mute button is tapped.</summary>
         public event Action MutePressed;
@@ -70,6 +75,8 @@ namespace Tamagotchi.UI
             Hook(sceneButton, () => backgrounds.Next());
             Hook(muteButton, () => MutePressed?.Invoke());
             Hook(restartButton, () => RestartPressed?.Invoke());
+            // Petting has its own sound/reaction, so it does not play the button click.
+            if (petButton != null) petButton.onClick.AddListener(() => PetTapped?.Invoke());
         }
 
         private void Hook(Button button, Action onClick)
@@ -94,6 +101,7 @@ namespace Tamagotchi.UI
 
         public Button SceneButton => sceneButton;
         public Button MuteButton => muteButton;
+        public Button PetButton => petButton;
         public Button RestartButton => restartButton;
         public bool IsGameOverShown => gameOverPanel != null && gameOverPanel.activeSelf;
 
