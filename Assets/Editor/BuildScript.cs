@@ -7,8 +7,9 @@ using UnityEngine;
 /// <summary>
 /// One-click / command-line builds. Output goes to Builds/ (not committed to git).
 ///
-/// Editor:       menu Tamagotchi > Build > WebGL | Android APK | Windows
-/// Command line: Tools/build.sh webgl|android|windows
+/// Editor:       menu Tamagotchi > Build > WebGL | Android APK | Windows | macOS
+/// Command line: Tools/build.sh webgl|android|windows|mac
+/// Then:         python Tools/package_release.py   (ready-to-download files in Builds/Release/)
 ///               (or Unity -batchmode -quit -projectPath . -buildTarget WebGL -executeMethod BuildScript.BuildWebGL)
 /// </summary>
 public static class BuildScript
@@ -16,6 +17,7 @@ public static class BuildScript
     public const string WebGLPath = "Builds/WebGL";
     public const string AndroidPath = "Builds/Android/CSEL-Tamagotchi.apk";
     public const string WindowsPath = "Builds/Windows/CSEL-Tamagotchi.exe";
+    public const string MacPath = "Builds/macOS/CSEL-Tamagotchi.app";
 
     private static string[] Scenes => new[] { ProjectSetup.MainScenePath };
 
@@ -43,6 +45,10 @@ public static class BuildScript
     /// <summary>Windows desktop build (portrait 540x960 window).</summary>
     [MenuItem("Tamagotchi/Build/Windows")]
     public static void BuildWindows() => Build(BuildTarget.StandaloneWindows64, WindowsPath);
+
+    /// <summary>macOS app (portrait window). Build it on a Mac, or install "Mac Build Support" on Windows.</summary>
+    [MenuItem("Tamagotchi/Build/macOS")]
+    public static void BuildMac() => Build(BuildTarget.StandaloneOSX, MacPath);
 
     private static void Build(BuildTarget target, string path)
     {

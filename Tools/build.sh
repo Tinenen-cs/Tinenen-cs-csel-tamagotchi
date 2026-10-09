@@ -3,6 +3,7 @@
 #   Tools/build.sh webgl     -> Builds/WebGL/            (needs "WebGL Build Support" module)
 #   Tools/build.sh android   -> Builds/Android/CSEL-Tamagotchi.apk (needs "Android Build Support")
 #   Tools/build.sh windows   -> Builds/Windows/CSEL-Tamagotchi.exe
+#   Tools/build.sh mac       -> Builds/macOS/CSEL-Tamagotchi.app    (on a Mac, or with "Mac Build Support")
 # Override the editor path with:  UNITY="/path/to/Unity" Tools/build.sh webgl
 set -euo pipefail
 
@@ -20,7 +21,8 @@ case "${1:-}" in
   webgl)   TARGET=WebGL;               METHOD=BuildScript.BuildWebGL ;;
   android) TARGET=Android;             METHOD=BuildScript.BuildAndroid ;;
   windows) TARGET=StandaloneWindows64; METHOD=BuildScript.BuildWindows ;;
-  *) echo "usage: Tools/build.sh webgl|android|windows"; exit 2 ;;
+  mac)     TARGET=StandaloneOSX;       METHOD=BuildScript.BuildMac ;;
+  *) echo "usage: Tools/build.sh webgl|android|windows|mac"; exit 2 ;;
 esac
 
 mkdir -p Logs
