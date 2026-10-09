@@ -28,6 +28,9 @@ namespace Tamagotchi.World
         /// <summary>Raised whenever the chosen background index changes (for saving).</summary>
         public event Action<int> IndexChanged;
 
+        /// <summary>Raised whenever the background on screen changes, incl. the sleep override (for music).</summary>
+        public event Action<Sprite> DisplayChanged;
+
         public int Index => _index;
         public int Count => backgrounds.Length;
         public Sprite Current => target != null ? target.sprite : null;
@@ -96,6 +99,8 @@ namespace Tamagotchi.World
             // width, so 0..1 always keeps the screen covered.
             var rt = target.rectTransform;
             rt.pivot = new Vector2(_override != null ? _alignX : 0.5f, rt.pivot.y);
+
+            if (oldSprite != target.sprite) DisplayChanged?.Invoke(target.sprite);
 
             // Crossfade: show the old scene on top (same shape and position) and fade it out.
             if (Application.isPlaying && fadeImage != null && oldSprite != null && oldSprite != target.sprite)

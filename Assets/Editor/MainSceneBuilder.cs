@@ -335,7 +335,25 @@ public static class MainSceneBuilder
             ("hangry", "SFX/hangry.ogg", 0.5f, 0.05f),
             ("sick", "SFX/sick.ogg", 0.6f, 0f),
             ("gameover", "SFX/gameover.ogg", 0.7f, 0f),
-            ("music", "Music/hammy_theme.wav", 0.6f, 0f),   // minimal, quiet loop (Tools/make_music.py)
+            // One minimal loop per scene (Tools/make_music.py); SceneMusic picks the right one.
+            ("music_home", "Music/music_home.wav", 0.6f, 0f),
+            ("music_garden", "Music/music_garden.wav", 0.6f, 0f),
+            ("music_beach", "Music/music_beach.wav", 0.6f, 0f),
+            ("music_forest", "Music/music_forest.wav", 0.6f, 0f),
+            ("music_rooftop", "Music/music_rooftop.wav", 0.6f, 0f),
+            ("music_night", "Music/music_night.wav", 0.6f, 0f),
+        });
+
+        var sceneMusic = audioGo.AddComponent<SceneMusic>();
+        Set(sceneMusic, "backgrounds", switcher);
+        SetSceneTracks(sceneMusic, new[]
+        {
+            ("cozy_home", "music_home"),
+            ("sunny_garden", "music_garden"),
+            ("beach", "music_beach"),
+            ("forest_stream", "music_forest"),
+            ("sunset_rooftop", "music_rooftop"),
+            ("moonlit_bedroom", "music_night"), // also while the pet sleeps
         });
 
         var petAudio = game.AddComponent<PetAudio>();
@@ -358,7 +376,22 @@ public static class MainSceneBuilder
         return list.ToArray();
     }
 
-    /// <summary>Fills AudioManager's sound list. "music" loops; everything else is a one-shot effect.</summary>
+    /// <summary>Fills SceneMusic's background -> music table (background file names under Art/Backgrounds).</summary>
+    private static void SetSceneTracks(SceneMusic music, (string background, string track)[] entries)
+    {
+        var so = new SerializedObject(music);
+        var list = so.FindProperty("tracks");
+        list.arraySize = entries.Length;
+        for (int i = 0; i < entries.Length; i++)
+        {
+            var e = list.GetArrayElementAtIndex(i);
+            e.FindPropertyRelative("background").objectReferenceValue = Sprite("Backgrounds/" + entries[i].background + ".png");
+            e.FindPropertyRelative("music").stringValue = entries[i].track;
+        }
+        so.ApplyModifiedPropertiesWithoutUndo();
+    }
+
+    /// <summary>Fills AudioManager's sound list. "music_*" entries loop; everything else is a one-shot effect.</summary>
     private static void SetSounds(AudioManager audio, (string name, string file, float volume, float pitchVariance)[] entries)
     {
         var so = new SerializedObject(audio);
@@ -372,10 +405,11 @@ public static class MainSceneBuilder
             e.FindPropertyRelative("name").stringValue = entries[i].name;
             e.FindPropertyRelative("clip").objectReferenceValue = clip;
             e.FindPropertyRelative("volume").floatValue = entries[i].volume;
-            e.FindPropertyRelative("volumeVariance").floatValue = entries[i].name == "music" ? 0f : 0.1f;
+            bool isMusic = entries[i].name.StartsWith("music");
+            e.FindPropertyRelative("volumeVariance").floatValue = isMusic ? 0f : 0.1f;
             e.FindPropertyRelative("pitch").floatValue = 1f;
             e.FindPropertyRelative("pitchVariance").floatValue = entries[i].pitchVariance;
-            e.FindPropertyRelative("loop").boolValue = entries[i].name == "music";
+            e.FindPropertyRelative("loop").boolValue = isMusic;
         }
         so.ApplyModifiedPropertiesWithoutUndo();
     }

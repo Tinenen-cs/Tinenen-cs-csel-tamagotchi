@@ -55,7 +55,9 @@ namespace Tamagotchi.Tests
         public void EverySoundHasAClip()
         {
             foreach (var name in new[] { "click", "mute", "scene", "scold", "eat", "study", "sleep", "play",
-                                         "happy", "sad", "cry", "hangry", "sick", "gameover", "music" })
+                                         "happy", "sad", "cry", "hangry", "sick", "gameover",
+                                         "music_home", "music_garden", "music_beach", "music_forest",
+                                         "music_rooftop", "music_night" })
                 Assert.IsTrue(_audio.Has(name), name + " has no clip");
         }
 
@@ -77,6 +79,33 @@ namespace Tamagotchi.Tests
                 CollectionAssert.Contains(_played, "click", pair.Key + " should click");
                 CollectionAssert.Contains(_played, pair.Value, pair.Key + " should play " + pair.Value);
             }
+        }
+
+        [UnityTest]
+        public IEnumerator EachScene_HasItsOwnMusic()
+        {
+            var seen = new HashSet<string>();
+            for (int i = 0; i < _ui.Backgrounds.Count; i++)
+            {
+                yield return null;
+                Assert.IsNotNull(_audio.CurrentMusic, "Every scene should have music.");
+                Assert.IsTrue(seen.Add(_audio.CurrentMusic), _audio.CurrentMusic + " is used by two scenes.");
+                _ui.SceneButton.onClick.Invoke();
+            }
+            Assert.AreEqual(6, seen.Count);
+            Assert.AreEqual("music_home", _audio.CurrentMusic, "Back at the start: home music.");
+        }
+
+        [UnityTest]
+        public IEnumerator Sleeping_PlaysNightMusic_WakingRestoresSceneMusic()
+        {
+            Assert.AreEqual("music_home", _audio.CurrentMusic);
+            _ui.GetButton(PetAction.Sleep).onClick.Invoke();
+            yield return null;
+            Assert.AreEqual("music_night", _audio.CurrentMusic);
+            _ui.GetButton(PetAction.Sleep).onClick.Invoke(); // wake
+            yield return null;
+            Assert.AreEqual("music_home", _audio.CurrentMusic);
         }
 
         [UnityTest]
