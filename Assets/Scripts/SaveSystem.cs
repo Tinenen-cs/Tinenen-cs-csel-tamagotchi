@@ -19,6 +19,7 @@ namespace Tamagotchi
         private class SaveData
         {
             public int version = 1;
+            // "energy" holds stamina (name kept so saves from older versions still load).
             public float hunger, happiness, energy, intelligence, health, starvingSeconds;
             public bool sleeping;
             public int background;
@@ -75,7 +76,7 @@ namespace Tamagotchi
             {
                 hunger = stats.Hunger,
                 happiness = stats.Happiness,
-                energy = stats.Energy,
+                energy = stats.Stamina,
                 intelligence = stats.Intelligence,
                 health = stats.Health,
                 starvingSeconds = stats.StarvingSeconds,
