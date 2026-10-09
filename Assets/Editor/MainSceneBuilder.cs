@@ -283,6 +283,12 @@ public static class MainSceneBuilder
         Set(manager, "ui", ui);
         Set(manager, "pet", controller);
 
+        // Save/load (PlayerPrefs) with offline time.
+        var saveSystem = game.AddComponent<SaveSystem>();
+        Set(saveSystem, "stats", stats);
+        Set(saveSystem, "backgrounds", switcher);
+        Set(manager, "save", saveSystem);
+
         // ---------- Audio: one SFX source + one music source ----------
         var audioGo = new GameObject("Audio");
         var sfx = audioGo.AddComponent<AudioSource>();
