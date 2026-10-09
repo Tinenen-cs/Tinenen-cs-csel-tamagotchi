@@ -16,7 +16,7 @@ using UnityEngine.UI;
 ///   │ Hammy               [♪]  │  header + mute
 ///   │ [🍴] HUNGER ███████ 100% │  big hunger bar (green → yellow → red)
 ///   │ [❤]Health   [☺]Happy     │  small bars, 2 x 2
-///   │ [z]Energy   [★]Smart     │
+///   │ [z]Stamina  [★]Smart     │
 ///   ├──────────────────────────┤
 ///   │      ( speech bubble )   │  pet area: nothing overlaps it
 ///   │          \/              │
@@ -45,7 +45,7 @@ public static class MainSceneBuilder
     private static readonly Color SoftBrown = new Color32(145, 87, 67, 255);
 
     private static readonly Color HappinessColor = new Color32(250, 190, 70, 255);
-    private static readonly Color EnergyColor = new Color32(150, 120, 220, 255);
+    private static readonly Color StaminaColor = new Color32(150, 120, 220, 255);
     private static readonly Color IntelligenceColor = new Color32(70, 190, 165, 255);
     private static readonly Color HealthColor = new Color32(240, 110, 125, 255);
 
@@ -106,8 +106,11 @@ public static class MainSceneBuilder
 
         var health = Small("HealthBar", "HEALTH", "UI/Icons/icon_health.png", HealthColor, 0, 0);
         var happiness = Small("HappinessBar", "HAPPY", "UI/Icons/icon_happiness.png", HappinessColor, 1, 0);
-        var energy = Small("EnergyBar", "ENERGY", "UI/Buttons/sleep_z.png", EnergyColor, 0, 1);
+        var stamina = Small("StaminaBar", "STAMINA", "UI/Buttons/sleep_z.png", StaminaColor, 0, 1);
         var intelligence = Small("IntelligenceBar", "SMART", "UI/Buttons/star.png", IntelligenceColor, 1, 1);
+        // Happiness and stamina show one decimal so the 0.01-per-tick decay and +/-0.5 actions are visible.
+        SetDecimals(happiness, 1);
+        SetDecimals(stamina, 1);
 
         // ---------- Bottom panel: action buttons (2 rows x 3) ----------
         var bottom = Rect("ActionBar", safeArea, Vector2.zero, new Vector2(1, 0), new Vector2(30, 20), new Vector2(-30, 440));
@@ -228,7 +231,7 @@ public static class MainSceneBuilder
         var ui = canvas.AddComponent<UIManager>();
         Set(ui, "hungerBar", hunger);
         Set(ui, "happinessBar", happiness);
-        Set(ui, "energyBar", energy);
+        Set(ui, "staminaBar", stamina);
         Set(ui, "intelligenceBar", intelligence);
         Set(ui, "healthBar", health);
         Set(ui, "feedButton", feed);
@@ -652,6 +655,13 @@ public static class MainSceneBuilder
         so.FindProperty("colorByValue").gradientValue = gradient;
         so.ApplyModifiedPropertiesWithoutUndo();
         bar.Fill.color = gradient.Evaluate(1f); // show the full-bar color in the editor too
+    }
+
+    private static void SetDecimals(StatBar bar, int decimals)
+    {
+        var so = new SerializedObject(bar);
+        so.FindProperty("decimals").intValue = decimals;
+        so.ApplyModifiedPropertiesWithoutUndo();
     }
 
     private static void SetFixedColor(StatBar bar, Color color)
