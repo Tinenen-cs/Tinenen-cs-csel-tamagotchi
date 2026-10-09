@@ -58,7 +58,7 @@ namespace Tamagotchi.Tests
             Assert.IsTrue(_save.LoadedFromSave);
             Assert.AreEqual(40f, _stats.Hunger, 0.5f);
             Assert.AreEqual(60f, _stats.Happiness, 0.5f);
-            Assert.AreEqual(50f, _stats.Energy, 0.5f);
+            Assert.AreEqual(50f, _stats.Stamina, 0.5f);
             Assert.AreEqual(30f, _stats.Intelligence, 0.5f);
             Assert.AreEqual(90f, _stats.Health, 0.5f);
             Assert.AreEqual(1, _ui.Backgrounds.Index, "Chosen scene should be remembered.");

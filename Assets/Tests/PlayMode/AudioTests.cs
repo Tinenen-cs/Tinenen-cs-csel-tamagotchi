@@ -71,7 +71,8 @@ namespace Tamagotchi.Tests
             };
             foreach (var pair in expected)
             {
-                _stats.SetValues(80, 80, 80, 10, 100, false, 0); // awake, rested, idle
+                // Awake and idle; exhausted only for Sleep (it is unlocked below 20 stamina).
+                _stats.SetValues(80, 80, pair.Key == PetAction.Sleep ? 10 : 80, 10, 100, false, 0);
                 yield return null;
                 _played.Clear();
                 _ui.GetButton(pair.Key).onClick.Invoke();
@@ -100,11 +101,12 @@ namespace Tamagotchi.Tests
         public IEnumerator Sleeping_PlaysNightMusic_WakingRestoresSceneMusic()
         {
             Assert.AreEqual("music_home", _audio.CurrentMusic);
+            _stats.SetValues(80, 80, 10, 10, 100, false, 0); // exhausted: Sleep is unlocked
             _ui.GetButton(PetAction.Sleep).onClick.Invoke();
             yield return null;
             Assert.AreEqual("music_night", _audio.CurrentMusic);
-            _ui.GetButton(PetAction.Sleep).onClick.Invoke(); // wake
-            yield return null;
+            float end = Time.time + _stats.Config.napSeconds + 0.2f; // wakes after the nap
+            while (Time.time < end) yield return null;
             Assert.AreEqual("music_home", _audio.CurrentMusic);
         }
 
