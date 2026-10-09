@@ -134,6 +134,14 @@ public static class MainSceneBuilder
         bgFit.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent; // fill the screen, crop the sides
         bgFit.aspectRatio = 493f / 391f;
 
+        // Copy of the background on top that fades out the old scene when it changes (crossfade).
+        var bgFade = Rect("BackgroundFade", bgLayer, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f), Vector2.zero, Vector2.zero);
+        var bgFadeImage = Img(bgFade.gameObject, Sprite("Backgrounds/cozy_home.png"));
+        var bgFadeFit = bgFade.gameObject.AddComponent<AspectRatioFitter>();
+        bgFadeFit.aspectMode = AspectRatioFitter.AspectMode.EnvelopeParent;
+        bgFadeFit.aspectRatio = 493f / 391f;
+        bgFadeImage.enabled = false;
+
         var dim = Rect("DimOverlay", bgLayer, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         var dimImage = Img(dim.gameObject, null);
         dimImage.color = new Color(0.05f, 0.05f, 0.2f, 0f);
@@ -141,6 +149,7 @@ public static class MainSceneBuilder
         var switcher = bgLayer.gameObject.AddComponent<BackgroundSwitcher>();
         Set(switcher, "target", bgImage);
         Set(switcher, "fitter", bgFit);
+        Set(switcher, "fadeImage", bgFadeImage);
         SetArray(switcher, "backgrounds", new Object[]
         {
             Sprite("Backgrounds/cozy_home.png"),
@@ -170,6 +179,12 @@ public static class MainSceneBuilder
         var pet = Rect("Pet", spot, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
         var petImage = Img(pet.gameObject, Sprite("Pet/Hamster/idle_01.png"), preserveAspect: true);
         var petAnimator = pet.gameObject.AddComponent<SpriteAnimator>();
+        // Tap the hamster to pet it (invisible button, squishes on press).
+        petImage.raycastTarget = true;
+        var petButton = pet.gameObject.AddComponent<Button>();
+        petButton.transition = Selectable.Transition.None;
+        petButton.navigation = new Navigation { mode = Navigation.Mode.None };
+        pet.gameObject.AddComponent<PressBounce>();
 
         var bowl = Rect("FoodBowl", spot, new Vector2(0.73f, -0.02f), new Vector2(1.17f, 0.353f), Vector2.zero, Vector2.zero);
         Img(bowl.gameObject, Sprite("Props/Home/food_bowl.png"), preserveAspect: true);
@@ -224,6 +239,7 @@ public static class MainSceneBuilder
         Set(ui, "sceneButton", scene);
         Set(ui, "muteButton", mute);
         Set(ui, "muteIcon", muteIcon);
+        Set(ui, "petButton", petButton);
         Set(ui, "speechBubble", bubble);
         Set(ui, "backgrounds", switcher);
 
@@ -245,6 +261,9 @@ public static class MainSceneBuilder
         Place(sub.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(30, -680), new Vector2(-30, -600));
         var restart = ActionButton(card, "RestartButton", "RESTART", Sprite("UI/Buttons/heart.png"));
         Place((RectTransform)restart.transform, new Vector2(0.5f, 0), new Vector2(0.5f, 0), new Vector2(-170, 40), new Vector2(170, 285));
+        gameOver.gameObject.AddComponent<CanvasGroup>();
+        var pop = gameOver.gameObject.AddComponent<PopIn>();
+        Set(pop, "content", card);
         gameOver.gameObject.SetActive(false);
 
         Set(ui, "gameOverPanel", gameOver.gameObject);
