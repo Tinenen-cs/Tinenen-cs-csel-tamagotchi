@@ -18,7 +18,7 @@ namespace Tamagotchi.UI
         [Header("Stat bars")]
         [SerializeField] private StatBar hungerBar;
         [SerializeField] private StatBar happinessBar;
-        [SerializeField] private StatBar energyBar;
+        [SerializeField] private StatBar staminaBar;
         [SerializeField] private StatBar intelligenceBar;
         [SerializeField] private StatBar healthBar;
 
@@ -60,7 +60,7 @@ namespace Tamagotchi.UI
 
         public StatBar HungerBar => hungerBar;
         public StatBar HappinessBar => happinessBar;
-        public StatBar EnergyBar => energyBar;
+        public StatBar StaminaBar => staminaBar;
         public StatBar IntelligenceBar => intelligenceBar;
         public StatBar HealthBar => healthBar;
         public BackgroundSwitcher Backgrounds => backgrounds;
@@ -109,8 +109,25 @@ namespace Tamagotchi.UI
         public void SetActionsInteractable(bool interactable)
         {
             foreach (PetAction a in Enum.GetValues(typeof(PetAction)))
-                GetButton(a).interactable = interactable;
+                SetUnlocked(a, interactable);
         }
+
+        /// <summary>
+        /// Locks or unlocks one action button. A locked button can't be pressed and is faded out,
+        /// so the lock is clearly visible (e.g. Play/Study when stamina is below 20).
+        /// </summary>
+        public void SetUnlocked(PetAction action, bool unlocked)
+        {
+            Button b = GetButton(action);
+            if (b == null) return;
+            b.interactable = unlocked;
+            var group = b.GetComponent<CanvasGroup>();
+            if (group == null) group = b.gameObject.AddComponent<CanvasGroup>();
+            group.alpha = unlocked ? 1f : 0.4f;
+        }
+
+        /// <summary>True if the action's button can be pressed right now.</summary>
+        public bool IsUnlocked(PetAction action) => GetButton(action).interactable;
 
         /// <summary>
         /// Shows a message in the speech bubble above the pet. Normal messages fade after a few

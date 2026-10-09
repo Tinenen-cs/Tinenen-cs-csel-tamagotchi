@@ -27,7 +27,7 @@ namespace Tamagotchi.Tests
         {
             Assert.IsNotNull(_ui.HungerBar);
             Assert.IsNotNull(_ui.HappinessBar);
-            Assert.IsNotNull(_ui.EnergyBar);
+            Assert.IsNotNull(_ui.StaminaBar);
             Assert.IsNotNull(_ui.IntelligenceBar);
             Assert.IsNotNull(_ui.HealthBar);
         }

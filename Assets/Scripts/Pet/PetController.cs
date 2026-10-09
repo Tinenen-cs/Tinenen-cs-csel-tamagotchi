@@ -25,7 +25,8 @@ namespace Tamagotchi.Pet
     /// The pet's state machine. Two layers decide what is shown:
     ///
     ///  1. Base state, from the stats (highest priority first):
-    ///     Sick > Sleeping > Hangry > Crying (low health) > Sad (low happiness) > Idle
+    ///     Sick > Sleeping > Hangry > Crying (low health) > Sad (happiness 50 or below) > Idle
+    ///     Reaching happiness 100 plays the Happy animation.
     ///  2. Short reactions to buttons, shown on top of the base state for a moment:
     ///     Eating, Studying, Playing -> Happy, Sad when scolded or when the pet refuses.
     ///
@@ -64,6 +65,8 @@ namespace Tamagotchi.Pet
         [SerializeField] private float reactionSeconds = 2f;
         [SerializeField] private float happyAfterPlaySeconds = 1.2f;
         [SerializeField] private float refuseSeconds = 1.5f;
+        [Tooltip("How long the happy animation plays when happiness reaches 100.")]
+        [SerializeField] private float fullHappinessSeconds = 2.5f;
 
         [Header("Effects")]
         [SerializeField] private Color hangryTint = new Color(1f, 0.55f, 0.5f);
@@ -97,12 +100,14 @@ namespace Tamagotchi.Pet
         {
             stats.Changed += Evaluate;
             stats.BecameSick += OnBecameSick;
+            stats.ReachedFullHappiness += OnFullHappiness;
         }
 
         private void OnDisable()
         {
             stats.Changed -= Evaluate;
             stats.BecameSick -= OnBecameSick;
+            stats.ReachedFullHappiness -= OnFullHappiness;
         }
 
         private void Start()
@@ -160,7 +165,7 @@ namespace Tamagotchi.Pet
             if (stats.IsSleeping) return PetState.Sleeping;
             if (stats.IsHangry) return PetState.Hangry;
             if (stats.IsUnwell) return PetState.Crying;
-            if (stats.IsUnhappy) return PetState.Sad;
+            if (stats.IsSad) return PetState.Sad;
             return PetState.Idle;
         }
 
@@ -178,6 +183,14 @@ namespace Tamagotchi.Pet
             _reaction = state;
             _reactionEnds = Time.time + seconds;
             Evaluate();
+        }
+
+        /// <summary>[Rule] Happiness reached exactly 100: show the happy animation.</summary>
+        private void OnFullHappiness()
+        {
+            if (stats.IsSick || stats.IsSleeping) return;
+            _hasFollowUp = false;
+            StartReaction(PetState.Happy, fullHappinessSeconds);
         }
 
         private void OnBecameSick()

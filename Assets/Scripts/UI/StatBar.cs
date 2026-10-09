@@ -14,6 +14,8 @@ namespace Tamagotchi.UI
         [SerializeField] private Slider slider;
         [SerializeField] private Image fill;
         [SerializeField] private TMP_Text valueText;
+        [Tooltip("Decimal places shown in the % label (1 makes small changes like 0.5 visible).")]
+        [Range(0, 2)] [SerializeField] private int decimals;
 
         [Tooltip("If on, the fill color is taken from the gradient (left = empty, right = full).")]
         [SerializeField] private bool useGradient;
@@ -55,7 +57,8 @@ namespace Tamagotchi.UI
             if (Mathf.Abs(value - slider.value) >= bumpThreshold) _bump = 1f;
             slider.value = value;
             fill.color = CurrentColor;
-            if (valueText != null) valueText.text = Mathf.RoundToInt(value) + "%";
+            if (valueText != null)
+                valueText.text = (decimals > 0 ? value.ToString("F" + decimals) : Mathf.RoundToInt(value).ToString()) + "%";
         }
 
         /// <summary>Whether the bar is currently flashing.</summary>

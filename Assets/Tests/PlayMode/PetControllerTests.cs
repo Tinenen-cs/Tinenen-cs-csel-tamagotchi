@@ -100,6 +100,8 @@ namespace Tamagotchi.Tests
         public IEnumerator Sleep_DimsScene_AndShowsNightBackground_UntilWake()
         {
             Sprite day = _ui.Backgrounds.Current;
+            _stats.SetValues(80, 80, 10, 10, 100, false, 0); // exhausted: Sleep is unlocked
+            yield return null;
             Press(PetAction.Sleep);
             yield return Wait(0.5f);
             Assert.AreEqual(PetState.Sleeping, _pet.State);
@@ -107,9 +109,9 @@ namespace Tamagotchi.Tests
             var dim = GameObject.Find("DimOverlay").GetComponent<UnityEngine.UI.Image>();
             Assert.Greater(dim.color.a, 0.1f, "Scene should be dimmed while sleeping.");
 
-            Press(PetAction.Sleep); // wake up
-            yield return null;
+            yield return Wait(_stats.Config.napSeconds); // nap ends by itself
             Assert.AreNotEqual(PetState.Sleeping, _pet.State);
+            Assert.AreEqual(100f, _stats.Stamina, 0.5f, "Sleep restores stamina to full.");
             Assert.AreEqual(day, _ui.Backgrounds.Current, "Day background should come back.");
         }
 
@@ -126,14 +128,60 @@ namespace Tamagotchi.Tests
             Assert.IsTrue(bowl.activeSelf, "Food bowl should appear while eating.");
             Assert.IsFalse(bed.activeSelf);
 
+            _stats.SetValues(80, 80, 10, 10, 100, false, 0); // exhausted: Sleep is unlocked
             Press(PetAction.Sleep);
             yield return null;
             Assert.IsTrue(bed.activeSelf, "Bed should appear while sleeping.");
             Assert.IsFalse(bowl.activeSelf);
 
-            Press(PetAction.Sleep); // wake
-            yield return null;
+            yield return Wait(_stats.Config.napSeconds + 0.2f); // wakes up after the nap
             Assert.IsFalse(bed.activeSelf);
+        }
+
+        [UnityTest]
+        public IEnumerator Rule_Happiness100_PlaysHappyAnimation()
+        {
+            _stats.SetValues(80, 99.8f, 80, 10, 100, false, 0);
+            yield return null;
+            Press(PetAction.Play);
+            yield return null;
+            Assert.AreEqual(100f, _stats.Happiness, 0.05f);
+            Assert.AreEqual(PetState.Happy, _pet.State, "Reaching 100 happiness shows the happy animation.");
+            Assert.AreEqual("I'm SO HAPPY!", _ui.SpeechBubble.Message);
+        }
+
+        [UnityTest]
+        public IEnumerator Rule_Happiness50_PlaysSadAnimation()
+        {
+            _stats.SetValues(80, 50.2f, 80, 10, 100, false, 0);
+            yield return null;
+            Assert.AreEqual(PetState.Idle, _pet.State);
+            yield return Wait(0.5f); // passive decay takes it to 50 or below
+            Assert.LessOrEqual(_stats.Happiness, 50f);
+            Assert.AreEqual(PetState.Sad, _pet.State, "At 50 happiness or below the pet is sad.");
+        }
+
+        [UnityTest]
+        public IEnumerator Rule_ButtonsLockAndUnlockWithStamina()
+        {
+            _stats.SetValues(80, 80, 60, 10, 100, false, 0);
+            yield return null;
+            Assert.IsTrue(_ui.IsUnlocked(PetAction.Play));
+            Assert.IsTrue(_ui.IsUnlocked(PetAction.Study));
+            Assert.IsFalse(_ui.IsUnlocked(PetAction.Sleep), "Sleep stays locked while stamina >= 20.");
+
+            _stats.SetValues(80, 80, 19, 10, 100, false, 0);
+            yield return null;
+            Assert.IsFalse(_ui.IsUnlocked(PetAction.Play), "Play locks below 20 stamina.");
+            Assert.IsFalse(_ui.IsUnlocked(PetAction.Study), "Study locks below 20 stamina.");
+            Assert.IsTrue(_ui.IsUnlocked(PetAction.Sleep), "Sleep unlocks below 20 stamina.");
+            Assert.IsTrue(_ui.IsUnlocked(PetAction.Feed));
+
+            Press(PetAction.Sleep);
+            yield return null;
+            Assert.AreEqual(100f, _stats.Stamina, 0.5f);
+            Assert.IsTrue(_ui.IsUnlocked(PetAction.Play), "Full stamina unlocks Play again.");
+            Assert.IsFalse(_ui.IsUnlocked(PetAction.Sleep), "And locks Sleep again.");
         }
 
         [UnityTest]

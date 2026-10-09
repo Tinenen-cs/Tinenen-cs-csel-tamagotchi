@@ -14,31 +14,35 @@ MonoBehaviour:
   m_EditorClassIdentifier: Tamagotchi::Tamagotchi.Pet.PetStatsConfig
   timeScale: 1
   startHunger: 80
-  startThirst: 80
-  startHappiness: 80
-  startEnergy: 80
+  startHappiness: 90
+  startStamina: 60
   startIntelligence: 10
   startHealth: 100
+  tickSeconds: 0.02
+  happinessDecayPerTick: 0.01
   hungerDecay: 6
-  thirstDecay: 7
-  happinessDecay: 4
-  energyDecay: 3
+  staminaDecay: 3
   intelligenceDecay: 1
-  sleepEnergyPerSecond: 4
+  napSeconds: 3
   sleepDecayMultiplier: 0.5
-  healthDrainPerEmptyStat: 12
+  healthDrainWhenStarving: 12
   healthRegen: 3
   wellFedLevel: 50
+  staminaLock: 20
+  sadThreshold: 50
   hangryThreshold: 25
   lowThreshold: 25
   starvingSecondsUntilSick: 30
+  offlineDecayMultiplier: 0.05
+  maxOfflineHours: 72
+  playHappiness: 0.5
+  studyHappinessCost: 0.5
+  feedStamina: 5
+  feedHappiness: 2
   feedHunger: 25
-  feedHappiness: 3
-  drinkThirst: 25
-  studyIntelligence: 12
-  studyEnergyCost: 10
-  studyHappinessCost: 5
-  playHappiness: 20
-  playEnergyCost: 8
-  playHungerCost: 3
-  playThirstCost: 3
+  playStaminaCost: 2
+  playHungerCost: 1
+  studyStaminaCost: 5
+  studyIntelligence: 5
+  petHappiness: 3
+  scoldHappinessCost: 10

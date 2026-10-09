@@ -25,22 +25,39 @@ public static class ScreenshotCapture
     [MenuItem("Tamagotchi/Capture Screenshot")]
     public static void Capture()
     {
-        Render("Docs/screenshot.png", null);
+        Render("Docs/screenshot.png", () => StartOfGame(90f, 60f));
     }
 
-    /// <summary>Poses the scene in a few states (eating, sleeping, hangry, playing, sick) and renders each.</summary>
+    /// <summary>
+    /// Poses the scene in the activity's states (happy at 100, sad at 50 or below, exhausted with
+    /// Play/Study locked and Sleep unlocked, sleeping) plus eating/playing/sick, and renders each.
+    /// </summary>
     [MenuItem("Tamagotchi/Capture State Screenshots")]
     public static void CaptureStates()
     {
-        Render("Docs/state_eating.png", () =>
+        Render("Docs/state_happy.png", () =>
         {
-            SetPet("eating_02");
-            Find<RectTransform>("FoodBowl").gameObject.SetActive(true);
-            SetBubble("Yum yum!");
-            Find<StatBar>("HungerBar").SetValue(72);
+            StartOfGame(100f, 58f);
+            SetPet("happy_02");
+            SetBubble("I'm SO HAPPY!");
+        });
+        Render("Docs/state_sad.png", () =>
+        {
+            StartOfGame(48.6f, 52f);
+            SetPet("sad_02");
+            SetBubble("I feel sad...");
+        });
+        Render("Docs/state_exhausted.png", () =>
+        {
+            StartOfGame(71.5f, 12.5f); // stamina below 20
+            Lock("PlayButton", true);
+            Lock("StudyButton", true);
+            Lock("SleepButton", false);
+            SetBubble("I'm exhausted...\nI need to SLEEP!");
         });
         Render("Docs/state_sleeping.png", () =>
         {
+            StartOfGame(70.8f, 100f); // Sleep restored stamina to full
             SetPet("sleeping_02");
             Find<RectTransform>("Bed").gameObject.SetActive(true);
             var pet = Find<RectTransform>("Pet");
@@ -48,24 +65,24 @@ public static class ScreenshotCapture
             SetBackground("moonlit_bedroom");
             Find<Image>("DimOverlay").color = new Color(0.05f, 0.05f, 0.2f, 0.45f);
             Find<RectTransform>("SpeechBubble").gameObject.SetActive(false); // hidden while asleep
-            Find<StatBar>("EnergyBar").SetValue(35);
         });
-        Render("Docs/state_hangry.png", () =>
+        Render("Docs/state_eating.png", () =>
         {
-            SetPet("sad_02");
-            Find<Image>("Pet").color = new Color(1f, 0.6f, 0.55f);
-            SetBubble("I'm HANGRY! Feed me!");
-            Find<StatBar>("HungerBar").SetValue(14);
-            Find<StatBar>("HappinessBar").SetValue(48);
+            StartOfGame(88f, 65f);
+            SetPet("eating_02");
+            Find<RectTransform>("FoodBowl").gameObject.SetActive(true);
+            SetBubble("Yum yum!");
         });
         Render("Docs/state_playing.png", () =>
         {
+            StartOfGame(90.5f, 58f);
             SetPet("playing_02");
             SetBackground("beach");
             SetBubble("Wheee! Fun!");
         });
         Render("Docs/state_sick.png", () =>
         {
+            StartOfGame(40f, 50f);
             SetPet("crying_02");
             Find<Image>("Pet").color = new Color(0.75f, 0.95f, 0.7f);
             SetBubble("I feel sick...");
@@ -73,6 +90,29 @@ public static class ScreenshotCapture
             Find<StatBar>("HealthBar").SetValue(0);
             Find<RectTransform>("GameOverPanel").gameObject.SetActive(true);
         });
+    }
+
+    /// <summary>Bars at typical in-game values, with the button locks the game would show.</summary>
+    private static void StartOfGame(float happiness, float stamina)
+    {
+        Find<StatBar>("HungerBar").SetValue(80);
+        Find<StatBar>("HappinessBar").SetValue(happiness);
+        Find<StatBar>("StaminaBar").SetValue(stamina);
+        Find<StatBar>("IntelligenceBar").SetValue(10);
+        Find<StatBar>("HealthBar").SetValue(100);
+        bool exhausted = stamina < 20f;
+        Lock("PlayButton", exhausted);
+        Lock("StudyButton", exhausted);
+        Lock("SleepButton", !exhausted);
+    }
+
+    /// <summary>Same look as UIManager.SetUnlocked: locked buttons are faded out.</summary>
+    private static void Lock(string button, bool locked)
+    {
+        var go = Find<RectTransform>(button).gameObject;
+        var group = go.GetComponent<CanvasGroup>();
+        if (group == null) group = go.AddComponent<CanvasGroup>(); // (?? doesn't work on Unity objects)
+        group.alpha = locked ? 0.4f : 1f;
     }
 
     // ---------- posing helpers ----------

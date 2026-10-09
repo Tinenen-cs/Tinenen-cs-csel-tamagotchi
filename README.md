@@ -7,10 +7,10 @@ and it gets **sick**.
 
 <p align="center"><img src="Docs/screenshot.png" alt="Game screen" width="320"></p>
 
-<p align="center"><img src="Docs/states_overview.png" alt="Eating, sleeping, hangry and playing states" width="720"></p>
+<p align="center"><img src="Docs/states_overview.png" alt="Happy at 100, sad at 50, exhausted with Play/Study locked, sleeping" width="720"></p>
 
 > Screenshots generated with **Tamagotchi → Capture Screenshot** / **Capture State Screenshots**
-> (states left to right: eating, sleeping in the bed, hangry, playing at the beach).
+> (states left to right: happy at 100, sad at 50 or below, exhausted with PLAY/STUDY locked and SLEEP unlocked, sleeping).
 
 ## Download & play
 
@@ -21,6 +21,44 @@ Ready-to-run builds are on the **[Releases page](https://github.com/Tinenen-cs/T
 | Windows | `CSEL-Tamagotchi-Windows.zip` | Unzip, double-click `CSEL-Tamagotchi.exe`. If SmartScreen warns, click **More info → Run anyway**. |
 | Android | `CSEL-Tamagotchi-Android.apk` | Download on the phone, tap it, allow **Install unknown apps**. |
 | macOS | `CSEL-Tamagotchi-macOS.zip` | Unzip, **right-click** `CSEL-Tamagotchi.app` → **Open** → **Open** (first time only; the app isn't notarized). |
+
+## Activity: Monster Simulator rules
+
+The game implements the activity's rules exactly (Stamina = the purple **STAMINA** bar, Happiness = the
+yellow **HAPPY** bar; both show one decimal). All numbers live in `Assets/Data/PetStatsConfig.asset`.
+
+| Rule | In the game | Code | Test |
+|------|-------------|------|------|
+| Happiness max 100 | Clamped to 0-100 | `PetStats.AddHappiness` | `Rule_HappinessMaxIs100` |
+| Passive decay 0.01 per tick | 1 tick = 0.02 s (50 ticks/s), so -0.01 every tick = -0.5/s | `PetStats.Step` | `Rule_HappinessDecays_0_01_PerTick` |
+| Play +0.5 happiness | PLAY (also uses 2 stamina) | `PetStats.Play` | `Rule_Play_AddsHalfHappiness` |
+| Study -0.5 happiness | STUDY (also uses 5 stamina, +5 smart) | `PetStats.Study` | `Rule_Study_RemovesHalfHappiness` |
+| Eat adds stamina and happiness | FEED: stamina +5, happiness +2 (and hunger +25) | `PetStats.Feed` | `Rule_Eat_AddsStaminaAndHappiness` |
+| Sleep restores stamina to full | SLEEP: stamina = 100, short 3 s nap, wakes by itself | `PetStats.Sleep` | `Rule_Sleep_RestoresStaminaToFull` |
+| Stamina < 20 locks Play/Study | PLAY and STUDY fade out and can't be pressed | `PetStats.CanPlay/CanStudy`, `GameManager.RefreshLocks` | `Rule_StaminaBelow20_LocksPlayAndStudy`, `Rule_ButtonsLockAndUnlockWithStamina` |
+| Sleep only when stamina < 20 | SLEEP is faded/locked until stamina drops below 20 | `PetStats.CanSleep` | `Rule_SleepOnlyUnlockedBelow20Stamina` |
+| Happiness exactly 100 → happy | Happy animation + jingle + "I'm SO HAPPY!" | `PetStats.ReachedFullHappiness`, `PetController.OnFullHappiness` | `Rule_ReachingExactly100_TriggersHappy`, `Rule_Happiness100_PlaysHappyAnimation` |
+| Happiness ≤ 50 → sad | Sad animation + "I feel sad..." while ≤ 50 | `PetStats.IsSad`, `PetController.BaseState` | `Rule_Happiness50OrBelow_IsSad`, `Rule_Happiness50_PlaysSadAnimation` |
+
+A new game starts at **Happiness 90** and **Stamina 60** so every rule can be shown in a short video.
+
+### Recording the video (about 2 minutes)
+
+Start recording: **Windows** `Win + Alt + R` (Xbox Game Bar; stop with the same keys, saved in
+*Videos > Captures*), **Mac** `Cmd + Shift + 5` → *Record Selected Portion*. Run the game in Unity
+(**▶ Play**, Game tab on *Phone*) or the built app. For a clean start use **Tamagotchi → Clear Save Data**
+before pressing Play.
+
+1. **Passive decay:** do nothing for ~10 s; the HAPPY value drops steadily (0.5 per second = 0.01 per tick).
+2. **Happy at 100:** tap **FEED** 2-3 times and **PLAY** a few times until HAPPY shows **100.0%**: the hamster
+   does its happy animation, a jingle plays and it says "I'm SO HAPPY!".
+3. **Sad at 50:** wait (about 100 s from 100), or tap **SCOLD** a few times to get there faster; at **50.0%** or
+   below the hamster switches to the sad animation and says "I feel sad...".
+4. **Stamina lock:** tap **STUDY** (and PLAY) until STAMINA is below **20**: PLAY and STUDY fade out and can't
+   be pressed; the hamster says "I'm exhausted... I need to SLEEP!".
+5. **Sleep unlocks only when low:** point out that SLEEP was faded the whole time and is now active. Tap
+   **SLEEP**: stamina jumps to **100.0%**, the hamster naps in its bed, then SLEEP locks again and PLAY/STUDY
+   unlock.
 
 ## Status
 
@@ -37,15 +75,15 @@ Ready-to-run builds are on the **[Releases page](https://github.com/Tinenen-cs/T
 
 ## Features
 
-- **Five stats (0–100):** Hunger, Happiness, Energy, Intelligence and Health. They decay every
-  second. All numbers are in `Assets/Data/PetStatsConfig.asset` (see *Tuning the stats*).
+- **Five stats (0–100):** Happiness and Stamina (the activity's rules, see above), plus Hunger,
+  Intelligence and Health. All numbers are in `Assets/Data/PetStatsConfig.asset` (see *Tuning the stats*).
 - **Hunger bar** at the top that goes green → yellow → red. **Below 25%** the pet is **hangry**: the bar
   flashes red and pulses, and the mood line says so. *(The angry emote and hangry sound come in steps 4–5.)*
 - **Health** drops while Hunger is at 0, and slowly recovers while Hunger is above 50%.
 - **Sick / game over:** if Health reaches 0, **or Hunger stays at 0 for 30 seconds**, the pet gets
   sick. A game-over card with the crying hamster and a **Restart** button appears.
-- **Sleep** restores Energy over time (4 per second) and slows the other stats. The pet wakes up by
-  itself when Energy is full, or when you tap Sleep again or do anything else.
+- **Sleep** (only unlocked below 20 stamina) restores stamina to full at once; the pet naps in its bed
+  for 3 seconds and wakes up by itself (or when you do anything else).
 - **Full-screen scenes:** the background fills the whole screen behind the UI. The **Scene** button
   cycles through 6 pixel-art backgrounds (default: cozy home). The stats sit at the top and the
   buttons at the bottom, leaving the middle clear so nothing covers the pet.
@@ -62,7 +100,8 @@ Ready-to-run builds are on the **[Releases page](https://github.com/Tinenen-cs/T
   | Eating | FEED (2 s) | `eating` frames + little hops, food bowl beside the pet |
   | Studying | STUDY (2 s) | `studying` frames |
   | Playing → Happy | PLAY (2 s, then 1.2 s happy) | `playing` then `happy` frames + bouncing |
-  | Sad | SCOLD (2 s), Happiness below 25%, or the pet refuses (too tired) | `sad` frames |
+  | Happy | Happiness reaches exactly 100 (2.5 s), or after PLAY / petting | `happy` frames + bouncing |
+  | Sad | Happiness 50 or below, SCOLD (2 s), or the pet refuses | `sad` frames |
   | Crying | Health below 25% | `crying` frames |
   | Hangry | Hunger below 25% | `sad` frames + red pulse + angry shake |
   | Sleeping | SLEEP | `sleeping` frames in the soft bed; the screen dims and switches to the moonlit bedroom |
@@ -87,11 +126,11 @@ Ready-to-run builds are on the **[Releases page](https://github.com/Tinenen-cs/T
 
 | Button | Effect (default numbers) |
 |--------|--------|
-| Feed | Hunger +25, Happiness +3 |
+| Feed (Eat) | Stamina +5, Happiness +2, Hunger +25 |
+| Play | Happiness **+0.5**, Stamina −2, Hunger −1 · **locked while Stamina < 20** |
+| Study | Happiness **−0.5**, Stamina −5, Smart +5 · **locked while Stamina < 20** |
+| Sleep | Stamina back to **100**, 3 s nap · **only unlocked while Stamina < 20** |
 | Scold | Happiness −10, sad reaction ("Sniff... I'm sorry!") |
-| Study | Intelligence +12, Energy −10, Happiness −5 (refused if Energy < 10: "too tired") |
-| Sleep | Falls asleep and Energy refills over time; tap again to wake up |
-| Play | Happiness +20, Energy −8, Hunger −3 (refused if Energy < 8) |
 | Scene | Changes the background (cozy home → sunny garden → beach → forest stream → sunset rooftop → moonlit bedroom) |
 | ♪ (top right) | Mute / unmute music and sounds (remembered next time; the icon fades while muted) |
 | Tap the hamster | Pet it: Happiness +3, happy reaction (once per second; not while asleep or sick) |
@@ -156,7 +195,8 @@ Assets/
     UI/SafeArea.cs    keeps UI clear of notches and cut-outs
     UI/PortraitFrame.cs keeps the UI a centered 9:16 column in wide windows
     World/BackgroundSwitcher.cs  full-screen background: Scene button cycling + temporary override (used by Sleep)
-    Pet/PetStats.cs        the five stats: decay, actions, sleep, health, hangry, sick
+    Pet/PetStats.cs        the stats and the activity rules: per-tick happiness decay, actions, stamina
+                           lock, sleep, happy at 100 / sad at 50, plus hunger, health, sick
     Pet/PetStatsConfig.cs  ScriptableObject with all tuning numbers
     Pet/PetController.cs   state machine: Idle, Eating, Studying, Sleeping, Playing, Happy, Sad, Crying, Hangry, Sick
     Pet/SpriteAnimator.cs  flip-book animation of sprite frames on a UI Image
@@ -298,8 +338,8 @@ edit the list in `Assets/Editor/MainSceneBuilder.cs` (`SetSounds`) instead.
 9. Try it:
    - **FEED / PLAY / STUDY:** the bars change and the speech bubble above the hamster reacts.
    - **SCOLD:** the hamster looks sad and says sorry; Happiness goes down.
-   - **SLEEP:** the hamster sleeps, the screen dims and turns to the moonlit bedroom while Energy refills;
-     tap again to wake up.
+   - **STUDY / PLAY** until stamina is below 20: they lock and **SLEEP** unlocks. **SLEEP:** stamina refills
+     to 100, the hamster naps in its bed (dimmed moonlit bedroom), then wakes up.
    - **PLAY:** the hamster plays and bounces, then looks happy.
    - **Tap the hamster** to pet it; watch the bars pop when a button changes them.
    - **SCENE:** the background changes.

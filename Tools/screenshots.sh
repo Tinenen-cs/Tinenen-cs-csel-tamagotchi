@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Regenerates the README screenshots (run after every change, before pushing):
 #   Docs/screenshot.png       main phone screen
-#   Docs/states_overview.png  eating, sleeping, hangry, playing side by side
+#   Docs/states_overview.png  happy (100), sad (<=50), exhausted (Play/Study locked), sleeping
 # Unity must be closed. Needs Python 3 + Pillow for the overview strip.
 # Override the editor path with:  UNITY="/path/to/Unity" Tools/screenshots.sh
 set -euo pipefail
@@ -25,7 +25,7 @@ done
 
 python - <<'EOF'
 from PIL import Image
-frames = ["Docs/state_eating.png", "Docs/state_sleeping.png", "Docs/state_hangry.png", "Docs/state_playing.png"]
+frames = ["Docs/state_happy.png", "Docs/state_sad.png", "Docs/state_exhausted.png", "Docs/state_sleeping.png"]
 shots = [Image.open(f).convert("RGB").resize((432, 768)) for f in frames]
 strip = Image.new("RGB", (432 * 4 + 30, 768), (30, 30, 30))
 for i, shot in enumerate(shots):
