@@ -162,26 +162,41 @@ namespace Tamagotchi.Tests
         }
 
         [UnityTest]
-        public IEnumerator Rule_ButtonsLockAndUnlockWithStamina()
+        public IEnumerator Rule_PlayStudyLockBelow20_SleepAlwaysPressable()
         {
             _stats.SetValues(80, 80, 60, 10, 100, false, 0);
             yield return null;
             Assert.IsTrue(_ui.IsUnlocked(PetAction.Play));
             Assert.IsTrue(_ui.IsUnlocked(PetAction.Study));
-            Assert.IsFalse(_ui.IsUnlocked(PetAction.Sleep), "Sleep stays locked while stamina >= 20.");
+            Assert.IsTrue(_ui.IsUnlocked(PetAction.Sleep), "The Sleep button is never disabled.");
 
             _stats.SetValues(80, 80, 19, 10, 100, false, 0);
             yield return null;
             Assert.IsFalse(_ui.IsUnlocked(PetAction.Play), "Play locks below 20 stamina.");
             Assert.IsFalse(_ui.IsUnlocked(PetAction.Study), "Study locks below 20 stamina.");
-            Assert.IsTrue(_ui.IsUnlocked(PetAction.Sleep), "Sleep unlocks below 20 stamina.");
+            Assert.IsTrue(_ui.IsUnlocked(PetAction.Sleep));
             Assert.IsTrue(_ui.IsUnlocked(PetAction.Feed));
 
             Press(PetAction.Sleep);
             yield return null;
-            Assert.AreEqual(100f, _stats.Stamina, 0.5f);
+            Assert.IsTrue(_stats.IsSleeping, "Below 20 stamina the pet sleeps.");
+            Assert.AreEqual(100f, _stats.Stamina, 0.5f, "Sleep restores stamina to full.");
             Assert.IsTrue(_ui.IsUnlocked(PetAction.Play), "Full stamina unlocks Play again.");
-            Assert.IsFalse(_ui.IsUnlocked(PetAction.Sleep), "And locks Sleep again.");
+        }
+
+        [UnityTest]
+        public IEnumerator Rule_SleepRefusedAt20OrMore_WithMessage()
+        {
+            // 25: comfortably above 20 even after a frame of passive stamina drain
+            // (the exact 20 boundary is covered by PetStatsTests.Rule_SleepOnlyUnlockedBelow20Stamina).
+            _stats.SetValues(80, 80, 25, 10, 100, false, 0);
+            yield return null;
+            Press(PetAction.Sleep);
+            yield return null;
+            Assert.IsFalse(_stats.IsSleeping, "At 20 stamina or more the pet can't sleep.");
+            Assert.AreEqual(25f, _stats.Stamina, 0.1f, "Stamina is not restored when sleep is refused.");
+            Assert.AreNotEqual(PetState.Sleeping, _pet.State);
+            Assert.AreEqual("I can't sleep...\nI'm not sleepy yet!", _ui.SpeechBubble.Message);
         }
 
         [UnityTest]

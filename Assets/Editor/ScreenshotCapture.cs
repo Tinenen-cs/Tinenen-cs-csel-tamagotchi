@@ -30,7 +30,7 @@ public static class ScreenshotCapture
 
     /// <summary>
     /// Poses the scene in the activity's states (happy at 100, sad at 50 or below, exhausted with
-    /// Play/Study locked and Sleep unlocked, sleeping) plus eating/playing/sick, and renders each.
+    /// Play/Study locked, sleeping) plus eating/playing/sick, and renders each.
     /// </summary>
     [MenuItem("Tamagotchi/Capture State Screenshots")]
     public static void CaptureStates()
@@ -52,7 +52,6 @@ public static class ScreenshotCapture
             StartOfGame(71.5f, 12.5f); // stamina below 20
             Lock("PlayButton", true);
             Lock("StudyButton", true);
-            Lock("SleepButton", false);
             SetBubble("I'm exhausted...\nI need to SLEEP!");
         });
         Render("Docs/state_sleeping.png", () =>
@@ -103,7 +102,6 @@ public static class ScreenshotCapture
         bool exhausted = stamina < 20f;
         Lock("PlayButton", exhausted);
         Lock("StudyButton", exhausted);
-        Lock("SleepButton", !exhausted);
     }
 
     /// <summary>Same look as UIManager.SetUnlocked: locked buttons are faded out.</summary>
