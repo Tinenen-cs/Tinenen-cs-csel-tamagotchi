@@ -48,6 +48,12 @@ namespace Tamagotchi.Pet
         [Tooltip("Seconds hunger may stay at 0 before the pet gets sick (game over).")]
         [Min(0f)] public float starvingSecondsUntilSick = 30f;
 
+        [Header("Offline (time while the game is closed)")]
+        [Tooltip("How fast stats change while the game is closed, compared to playing. 0.05 = 1 hour away counts as 3 minutes.")]
+        [Range(0, 1)] public float offlineDecayMultiplier = 0.05f;
+        [Tooltip("Longer absences are capped at this many hours.")]
+        [Min(0f)] public float maxOfflineHours = 72f;
+
         [Header("Action effects (instant)")]
         public float feedHunger = 25f;
         public float feedHappiness = 3f;

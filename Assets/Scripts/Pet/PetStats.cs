@@ -103,9 +103,15 @@ namespace Tamagotchi.Pet
         /// Advances the stats by <paramref name="seconds"/> of game time.
         /// Called every frame, and with a large value to apply offline time.
         /// </summary>
-        public void Simulate(float seconds)
+        public void Simulate(float seconds) => Simulate(seconds, applyTimeScale: true);
+
+        /// <summary>
+        /// Advances the stats; <paramref name="applyTimeScale"/> = false ignores the demo Time Scale
+        /// (used for offline time, which has its own multiplier).
+        /// </summary>
+        public void Simulate(float seconds, bool applyTimeScale)
         {
-            float remaining = seconds * config.timeScale;
+            float remaining = seconds * (applyTimeScale ? config.timeScale : 1f);
             while (remaining > 0f && !IsSick)
             {
                 float step = Mathf.Min(remaining, MaxStepSeconds);
