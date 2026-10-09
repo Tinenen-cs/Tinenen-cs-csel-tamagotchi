@@ -15,6 +15,7 @@ namespace Tamagotchi.Tests
         [UnityTest]
         public IEnumerator MainScene_RunsWithoutErrors()
         {
+            TestSave.Isolate();
             yield return SceneManager.LoadSceneAsync("Main");
             Assert.AreEqual("Main", SceneManager.GetActiveScene().name);
 
