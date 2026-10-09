@@ -10,7 +10,7 @@ and it gets **sick**.
 <p align="center"><img src="Docs/states_overview.png" alt="Happy at 100, sad at 50, exhausted with Play/Study locked, sleeping" width="720"></p>
 
 > Screenshots generated with **Tamagotchi → Capture Screenshot** / **Capture State Screenshots**
-> (states left to right: happy at 100, sad at 50 or below, exhausted with PLAY/STUDY locked and SLEEP unlocked, sleeping).
+> (states left to right: happy at 100, sad at 50 or below, exhausted with PLAY/STUDY locked, sleeping).
 
 ## Download & play
 
@@ -35,8 +35,8 @@ yellow **HAPPY** bar; both show one decimal). All numbers live in `Assets/Data/P
 | Study -0.5 happiness | STUDY (also uses 5 stamina, +5 smart) | `PetStats.Study` | `Rule_Study_RemovesHalfHappiness` |
 | Eat adds stamina and happiness | FEED: stamina +5, happiness +2 (and hunger +25) | `PetStats.Feed` | `Rule_Eat_AddsStaminaAndHappiness` |
 | Sleep restores stamina to full | SLEEP: stamina = 100, short 3 s nap, wakes by itself | `PetStats.Sleep` | `Rule_Sleep_RestoresStaminaToFull` |
-| Stamina < 20 locks Play/Study | PLAY and STUDY fade out and can't be pressed | `PetStats.CanPlay/CanStudy`, `GameManager.RefreshLocks` | `Rule_StaminaBelow20_LocksPlayAndStudy`, `Rule_ButtonsLockAndUnlockWithStamina` |
-| Sleep only when stamina < 20 | SLEEP is faded/locked until stamina drops below 20 | `PetStats.CanSleep` | `Rule_SleepOnlyUnlockedBelow20Stamina` |
+| Stamina < 20 locks Play/Study | PLAY and STUDY fade out and can't be pressed | `PetStats.CanPlay/CanStudy`, `GameManager.RefreshLocks` | `Rule_StaminaBelow20_LocksPlayAndStudy`, `Rule_PlayStudyLockBelow20_SleepAlwaysPressable` |
+| Sleep only when stamina < 20 | The SLEEP button always works, but the pet only sleeps below 20 stamina; otherwise it says "I can't sleep... I'm not sleepy yet!" | `PetStats.CanSleep/Sleep`, `GameManager.OnActionPressed` | `Rule_SleepOnlyUnlockedBelow20Stamina`, `Rule_SleepRefusedAt20OrMore_WithMessage` |
 | Happiness exactly 100 → happy | Happy animation + jingle + "I'm SO HAPPY!" | `PetStats.ReachedFullHappiness`, `PetController.OnFullHappiness` | `Rule_ReachingExactly100_TriggersHappy`, `Rule_Happiness100_PlaysHappyAnimation` |
 | Happiness ≤ 50 → sad | Sad animation + "I feel sad..." while ≤ 50 | `PetStats.IsSad`, `PetController.BaseState` | `Rule_Happiness50OrBelow_IsSad`, `Rule_Happiness50_PlaysSadAnimation` |
 
@@ -56,9 +56,9 @@ before pressing Play.
    below the hamster switches to the sad animation and says "I feel sad...".
 4. **Stamina lock:** tap **STUDY** (and PLAY) until STAMINA is below **20**: PLAY and STUDY fade out and can't
    be pressed; the hamster says "I'm exhausted... I need to SLEEP!".
-5. **Sleep unlocks only when low:** point out that SLEEP was faded the whole time and is now active. Tap
-   **SLEEP**: stamina jumps to **100.0%**, the hamster naps in its bed, then SLEEP locks again and PLAY/STUDY
-   unlock.
+5. **Sleep only works when low:** early in the video (stamina above 20) tap **SLEEP**: the hamster refuses with
+   "I can't sleep... I'm not sleepy yet!". Now, with stamina below 20, tap **SLEEP** again: stamina jumps to
+   **100.0%**, the hamster naps in its bed, and PLAY/STUDY unlock.
 
 ## Status
 
@@ -82,8 +82,8 @@ before pressing Play.
 - **Health** drops while Hunger is at 0, and slowly recovers while Hunger is above 50%.
 - **Sick / game over:** if Health reaches 0, **or Hunger stays at 0 for 30 seconds**, the pet gets
   sick. A game-over card with the crying hamster and a **Restart** button appears.
-- **Sleep** (only unlocked below 20 stamina) restores stamina to full at once; the pet naps in its bed
-  for 3 seconds and wakes up by itself (or when you do anything else).
+- **Sleep** works only below 20 stamina (above that the pet says "I can't sleep... I'm not sleepy yet!")
+  and restores stamina to full at once; the pet naps in its bed for 3 seconds and wakes up by itself.
 - **Full-screen scenes:** the background fills the whole screen behind the UI. The **Scene** button
   cycles through 6 pixel-art backgrounds (default: cozy home). The stats sit at the top and the
   buttons at the bottom, leaving the middle clear so nothing covers the pet.
@@ -129,7 +129,7 @@ before pressing Play.
 | Feed (Eat) | Stamina +5, Happiness +2, Hunger +25 |
 | Play | Happiness **+0.5**, Stamina −2, Hunger −1 · **locked while Stamina < 20** |
 | Study | Happiness **−0.5**, Stamina −5, Smart +5 · **locked while Stamina < 20** |
-| Sleep | Stamina back to **100**, 3 s nap · **only unlocked while Stamina < 20** |
+| Sleep | Stamina back to **100**, 3 s nap · **only works while Stamina < 20** (otherwise: "I'm not sleepy yet!") |
 | Scold | Happiness −10, sad reaction ("Sniff... I'm sorry!") |
 | Scene | Changes the background (cozy home → sunny garden → beach → forest stream → sunset rooftop → moonlit bedroom) |
 | ♪ (top right) | Mute / unmute music and sounds (remembered next time; the icon fades while muted) |
@@ -338,8 +338,9 @@ edit the list in `Assets/Editor/MainSceneBuilder.cs` (`SetSounds`) instead.
 9. Try it:
    - **FEED / PLAY / STUDY:** the bars change and the speech bubble above the hamster reacts.
    - **SCOLD:** the hamster looks sad and says sorry; Happiness goes down.
-   - **STUDY / PLAY** until stamina is below 20: they lock and **SLEEP** unlocks. **SLEEP:** stamina refills
-     to 100, the hamster naps in its bed (dimmed moonlit bedroom), then wakes up.
+   - **SLEEP** while stamina is 20 or more: the hamster says it isn't sleepy yet. **STUDY / PLAY** until
+     stamina is below 20: they lock. Now **SLEEP** works: stamina refills to 100, the hamster naps in its
+     bed (dimmed moonlit bedroom), then wakes up.
    - **PLAY:** the hamster plays and bounces, then looks happy.
    - **Tap the hamster** to pet it; watch the bars pop when a button changes them.
    - **SCENE:** the background changes.
