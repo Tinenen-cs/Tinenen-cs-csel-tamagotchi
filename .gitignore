@@ -58,3 +58,6 @@ desktop.ini
 # Per-state renders from Tamagotchi > Capture State Screenshots (README uses Docs/states_overview.png)
 /Docs/state_*.png
 /Docs/landscape_check.png
+
+# Unity build temp
+/.utmp/
