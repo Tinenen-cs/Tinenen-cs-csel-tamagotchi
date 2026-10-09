@@ -16,12 +16,21 @@ namespace Tamagotchi.Audio
         [SerializeField] private AudioSource musicSource;
         [Tooltip("Every sound effect and the music track, by name.")]
         [SerializeField] private Sound[] sounds = new Sound[0];
-        [Tooltip("Name of the entry in Sounds that is played as background music.")]
-        [SerializeField] private string musicName = "music";
+        [Tooltip("Music played at start if nothing else picks one (SceneMusic switches per scene).")]
+        [SerializeField] private string musicName = "music_home";
+        [Tooltip("Seconds to fade out the old track and fade in the new one when the music changes.")]
+        [SerializeField] private float musicFadeSeconds = 0.5f;
 
         private const string MuteKey = "Tamagotchi.Muted";
 
         public bool IsMuted { get; private set; }
+
+        /// <summary>Name of the music track playing (or fading in) now.</summary>
+        public string CurrentMusic { get; private set; }
+
+        private string _pendingMusic;   // track to switch to once the old one has faded out
+        private float _musicVolume = 1f; // target volume of the current track
+        private float _fade = 1f;        // 1 = full volume, fades to 0 before a switch
 
         /// <summary>Raised when mute is switched on (true) or off (false).</summary>
         public event Action<bool> MuteChanged;
@@ -46,7 +55,26 @@ namespace Tamagotchi.Audio
             if (Instance == this) Instance = null;
         }
 
-        private void Start() => PlayMusic(musicName);
+        private void Start()
+        {
+            if (string.IsNullOrEmpty(CurrentMusic)) PlayMusic(musicName);
+        }
+
+        private void Update()
+        {
+            if (musicSource == null) return;
+            float step = Time.unscaledDeltaTime / Mathf.Max(0.01f, musicFadeSeconds);
+            if (_pendingMusic != null)
+            {
+                _fade = Mathf.Max(0f, _fade - step);           // fade the old track out...
+                if (_fade <= 0f) StartTrack(_pendingMusic);   // ...then switch
+            }
+            else if (_fade < 1f)
+            {
+                _fade = Mathf.Min(1f, _fade + step);           // fade the new track in
+            }
+            musicSource.volume = _musicVolume * _fade;
+        }
 
         /// <summary>Plays a sound effect once (with a little random pitch/volume variation).</summary>
         public void Play(string soundName)
@@ -63,15 +91,33 @@ namespace Tamagotchi.Audio
             SoundPlayed?.Invoke(soundName);
         }
 
-        /// <summary>Starts (or switches) the background music.</summary>
+        /// <summary>Starts the background music, or crossfades to another track if one is playing.</summary>
         public void PlayMusic(string soundName)
         {
             Sound s = Find(soundName);
-            if (s == null || s.clip == null) return;
+            if (s == null || s.clip == null)
+            {
+                Debug.LogWarning($"[AudioManager] No music clip '{soundName}'.");
+                return;
+            }
+            if (soundName == CurrentMusic && _pendingMusic == null) return; // already playing
+            CurrentMusic = soundName;
+            if (musicSource.isPlaying && musicSource.clip != null && musicFadeSeconds > 0f && Application.isPlaying)
+                _pendingMusic = soundName; // Update fades out, then starts it
+            else
+                StartTrack(soundName);
+        }
+
+        private void StartTrack(string soundName)
+        {
+            Sound s = Find(soundName);
+            _pendingMusic = null;
             musicSource.clip = s.clip;
-            musicSource.volume = s.volume;
             musicSource.pitch = s.pitch;
             musicSource.loop = s.loop;
+            _musicVolume = s.volume;
+            _fade = musicSource.isPlaying ? 0f : (musicFadeSeconds > 0f ? 0f : 1f);
+            musicSource.volume = _musicVolume * _fade;
             musicSource.Play();
         }
 
