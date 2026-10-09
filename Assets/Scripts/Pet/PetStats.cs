@@ -165,6 +165,15 @@ namespace Tamagotchi.Pet
             return AfterAction();
         }
 
+        /// <summary>Petting (tapping the hamster): a little Happiness. Ignored while asleep or sick.</summary>
+        public bool Pet()
+        {
+            if (IsSick || IsSleeping) return false;
+            Happiness = Clamp(Happiness + config.petHappiness);
+            Changed?.Invoke();
+            return true;
+        }
+
         /// <summary>Scolding: the pet gets sad (Happiness goes down).</summary>
         public bool Scold()
         {

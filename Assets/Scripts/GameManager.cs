@@ -18,12 +18,18 @@ namespace Tamagotchi
         [Tooltip("Name used in the mood messages.")]
         [SerializeField] private string petName = "Hammy";
 
+        [Tooltip("Minimum seconds between pets (taps on the hamster) that count.")]
+        [SerializeField] private float petCooldown = 1f;
+
+        private float _nextPet;
+
         private string PetName => petName;
 
         private void OnEnable()
         {
             ui.ActionPressed += OnActionPressed;
             ui.RestartPressed += OnRestartPressed;
+            ui.PetTapped += OnPetTapped;
             stats.Changed += RefreshBars;
             stats.HangryChanged += OnHangryChanged;
             stats.SleepChanged += OnSleepChanged;
@@ -34,6 +40,7 @@ namespace Tamagotchi
         {
             ui.ActionPressed -= OnActionPressed;
             ui.RestartPressed -= OnRestartPressed;
+            ui.PetTapped -= OnPetTapped;
             stats.Changed -= RefreshBars;
             stats.HangryChanged -= OnHangryChanged;
             stats.SleepChanged -= OnSleepChanged;
@@ -91,6 +98,15 @@ namespace Tamagotchi
                     break;
             }
             pet.React(action, ok); // animation / emote for this action
+        }
+
+        private void OnPetTapped()
+        {
+            if (Time.time < _nextPet) return;
+            _nextPet = Time.time + petCooldown;
+            if (!stats.Pet()) return;
+            Say("Hehe, that tickles!");
+            pet.ReactToPetting();
         }
 
         private void OnRestartPressed()
